@@ -81,11 +81,26 @@ class DriverStopsViewModel : ViewModel() {
     fun deleteStop(stopId: Int, companyId: Int) {
         viewModelScope.launch {
             try {
+                _state.value = _state.value.copy(message = "")
+
                 RetrofitClient.api.deleteStop(stopId)
+
                 loadStops(companyId)
+
             } catch (e: Exception) {
+                val message = if (e is retrofit2.HttpException) {
+                    when (e.code()) {
+                        400 -> "El paradero no fue encontrado."
+                        409 -> "No se puede eliminar este paradero porque está en uso por una ruta."
+                        404 -> "No se puede eliminar este paradero porque está asociado a una ruta. Primero elimina la ruta."
+                        else -> "Error al eliminar paradero: ${e.code()}"
+                    }
+                } else {
+                    "Error al eliminar paradero"
+                }
+
                 _state.value = _state.value.copy(
-                    message = e.message ?: "Error eliminando paradero"
+                    message = message
                 )
             }
         }

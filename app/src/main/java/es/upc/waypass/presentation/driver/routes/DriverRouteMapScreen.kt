@@ -10,6 +10,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import es.upc.waypass.data.model.RouteDto
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.Alignment
 
 @Composable
 fun DriverRouteMapScreen(
@@ -103,17 +105,29 @@ fun DriverRouteMapScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp)
+                .padding(top = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Button(onClick = onBackClick) {
+            Button(
+                onClick = onBackClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
                 Text("← Volver")
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
+                elevation = CardDefaults.cardElevation(6.dp),
+                shape = MaterialTheme.shapes.large
             ) {
 
                 Column(

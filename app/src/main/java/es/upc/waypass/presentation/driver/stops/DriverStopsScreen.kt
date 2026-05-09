@@ -509,6 +509,8 @@ fun StopItemCard(
     reference: String,
     onDeleteClick: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -565,7 +567,9 @@ fun StopItemCard(
             }
 
             IconButton(
-                onClick = onDeleteClick
+                onClick = {
+                    showDeleteDialog = true
+                }
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
@@ -575,4 +579,68 @@ fun StopItemCard(
             }
         }
     }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+            },
+            icon = {
+                Box(
+                    modifier = Modifier
+                        .size(62.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFFE4E6)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = Color(0xFFDC2626),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            },
+            title = {
+                Text(
+                    text = "¿Confirmar acción?",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color(0xFF111827)
+                )
+            },
+            text = {
+                Text(
+                    text = "Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este paradero?",
+                    color = Color(0xFF4B5563)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4F46E5)
+                    ),
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text("Confirmar")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        showDeleteDialog = false
+                    },
+                    shape = RoundedCornerShape(50)
+                ) {
+                    Text("Cancelar")
+                }
+            },
+            shape = RoundedCornerShape(28.dp),
+            containerColor = Color.White
+        )
+    }
 }
+

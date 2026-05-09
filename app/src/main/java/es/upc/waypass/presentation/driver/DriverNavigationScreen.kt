@@ -54,6 +54,7 @@ fun DriverNavigationScreen(
     ) { paddingValues ->
         when (selectedIndex) {
             0 -> DriverDashboardScreen(
+                companyId = companyId,
                 companyName = companyName,
                 paddingValues = paddingValues
             )

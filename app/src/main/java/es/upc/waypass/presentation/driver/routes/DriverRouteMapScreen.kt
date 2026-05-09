@@ -1,103 +1,98 @@
 package es.upc.waypass.presentation.driver.routes
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import es.upc.waypass.data.model.RouteDto
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.ui.Alignment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+
+private const val GOOGLE_ROUTES_API_KEY = "AIzaSyAuTncWDz3h-Qkr32CZmk6gJZqqi7ev56A"
 
 @Composable
 fun DriverRouteMapScreen(
     route: RouteDto?,
     onBackClick: () -> Unit = {}
 ) {
-
-    Log.d("WAYPASS_MAP", "ROUTE: $route")
-
     val routePoints = route?.stops
         ?.mapNotNull { stop ->
+            val coordinates = stop.googleMapsUrl?.takeIf { it.isNotBlank() }
+                ?: stop.imageUrl?.takeIf { it.isNotBlank() }
 
-            Log.d(
-                "WAYPASS_MAP",
-                "STOP URL -> ${stop.googleMapsUrl}"
-            )
-
-            val position =
-                extractLatLngFromGoogleMapsUrl(stop.googleMapsUrl)
-
-            Log.d(
-                "WAYPASS_MAP",
-                "PARSED POSITION -> $position"
-            )
-
-            position
+            extractLatLngFromGoogleMapsUrl(coordinates)
         }
         ?: emptyList()
 
-    Log.d(
-        "WAYPASS_MAP",
-        "FINAL ROUTE POINTS -> $routePoints"
-    )
+    var realRoutePoints by remember { mutableStateOf<List<LatLng>>(emptyList()) }
+    var durationText by remember { mutableStateOf("${route?.duration ?: 0} min") }
+    var distanceText by remember { mutableStateOf("Calculando...") }
+    var errorMessage by remember { mutableStateOf("") }
 
-    val initialPosition =
-        routePoints.firstOrNull()
-            ?: LatLng(-12.0464, -77.0428)
+    LaunchedEffect(route?.id) {
+        if (routePoints.size >= 2) {
+            try {
+                val result = fetchGoogleRoute(routePoints)
+                realRoutePoints = result.points
+                durationText = result.durationText
+                distanceText = result.distanceText
+                errorMessage = ""
+            } catch (e: Exception) {
+                Log.e("WAYPASS_MAP", "Routes API error", e)
+                realRoutePoints = routePoints
+                distanceText = "No disponible"
+                errorMessage = "No se pudo calcular la ruta real. Se muestra línea referencial."
+            }
+        }
+    }
+
+    val initialPosition = routePoints.firstOrNull() ?: LatLng(-12.0464, -77.0428)
 
     val cameraPositionState = rememberCameraPositionState {
-        position =
-            CameraPosition.fromLatLngZoom(initialPosition, 13f)
+        position = CameraPosition.fromLatLngZoom(initialPosition, 13f)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPositionState
         ) {
+            routePoints.forEachIndexed { index, point ->
+                val stop = route?.stops?.getOrNull(index)
 
-            route?.stops?.forEach { stop ->
-
-                val position =
-                    extractLatLngFromGoogleMapsUrl(stop.googleMapsUrl)
-
-                if (position != null) {
-
-                    Log.d(
-                        "WAYPASS_MAP",
-                        "DRAWING MARKER -> ${stop.name} : $position"
-                    )
-
-                    Marker(
-                        state = rememberMarkerState(position = position),
-                        title = stop.name,
-                        snippet = stop.address
-                    )
-                } else {
-
-                    Log.d(
-                        "WAYPASS_MAP",
-                        "MARKER FAILED -> ${stop.name}"
-                    )
-                }
+                Marker(
+                    state = rememberMarkerState(position = point),
+                    title = stop?.name ?: "Paradero ${index + 1}",
+                    snippet = stop?.address ?: ""
+                )
             }
 
-            if (routePoints.size >= 2) {
-
-                Log.d(
-                    "WAYPASS_MAP",
-                    "DRAWING POLYLINE -> $routePoints"
+            if (realRoutePoints.size >= 2) {
+                Polyline(
+                    points = realRoutePoints,
+                    width = 10f,
+                    color = Color(0xFF4F46E5)
                 )
-
+            } else if (routePoints.size >= 2) {
                 Polyline(
                     points = routePoints,
-                    width = 8f
+                    width = 8f,
+                    color = Color(0xFF6B7280)
                 )
             }
         }
@@ -110,109 +105,212 @@ fun DriverRouteMapScreen(
                 .padding(top = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Button(
-                onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
+            Button(onClick = onBackClick) {
                 Text("← Volver")
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
+                modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(6.dp),
-                shape = MaterialTheme.shapes.large
+                shape = RoundedCornerShape(20.dp)
             ) {
-
                 Column(
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
-
                     Text("Ruta #${route?.id ?: "-"}")
+                    Text("Paraderos: ${route?.stops?.size ?: 0}")
+                    Text("Duración aproximada: $durationText")
+                    Text("Distancia aproximada: $distanceText")
 
-                    Text(
-                        "Paraderos: ${route?.stops?.size ?: 0}"
-                    )
-
-                    Text(
-                        "Duración estimada: ${route?.duration ?: 0} min"
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        "Puntos detectados: ${routePoints.size}"
-                    )
+                    if (errorMessage.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = errorMessage,
+                            color = Color.Red,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-fun extractLatLngFromGoogleMapsUrl(
-    url: String?
-): LatLng? {
+data class GoogleRouteResult(
+    val points: List<LatLng>,
+    val durationText: String,
+    val distanceText: String
+)
 
-    Log.d(
-        "WAYPASS_MAP",
-        "EXTRACT FUNCTION URL -> $url"
-    )
+suspend fun fetchGoogleRoute(points: List<LatLng>): GoogleRouteResult {
+    return withContext(Dispatchers.IO) {
+        val origin = points.first()
+        val destination = points.last()
+        val intermediates = points.drop(1).dropLast(1)
 
-    if (url.isNullOrBlank()) {
+        val requestJson = JSONObject().apply {
+            put("origin", latLngWaypoint(origin))
+            put("destination", latLngWaypoint(destination))
 
-        Log.d(
-            "WAYPASS_MAP",
-            "URL IS NULL"
+            if (intermediates.isNotEmpty()) {
+                put(
+                    "intermediates",
+                    JSONArray().apply {
+                        intermediates.forEach { point ->
+                            put(latLngWaypoint(point))
+                        }
+                    }
+                )
+            }
+
+            put("travelMode", "DRIVE")
+            put("routingPreference", "TRAFFIC_AWARE")
+            put("computeAlternativeRoutes", false)
+            put("languageCode", "es-PE")
+            put("units", "METRIC")
+        }
+
+        val url = URL("https://routes.googleapis.com/directions/v2:computeRoutes")
+        val connection = url.openConnection() as HttpURLConnection
+
+        connection.requestMethod = "POST"
+        connection.setRequestProperty("Content-Type", "application/json")
+        connection.setRequestProperty("X-Goog-Api-Key", GOOGLE_ROUTES_API_KEY)
+        connection.setRequestProperty(
+            "X-Goog-FieldMask",
+            "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline"
         )
+        connection.doOutput = true
 
-        return null
-    }
+        connection.outputStream.use { output ->
+            output.write(requestJson.toString().toByteArray())
+        }
 
-    val parts = url.split(",")
+        val responseCode = connection.responseCode
+        val responseText = if (responseCode in 200..299) {
+            connection.inputStream.bufferedReader().use { it.readText() }
+        } else {
+            connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+        }
 
-    Log.d(
-        "WAYPASS_MAP",
-        "SPLIT PARTS -> ${parts.toList()}"
-    )
+        if (responseCode !in 200..299) {
+            throw Exception("HTTP $responseCode: $responseText")
+        }
 
-    if (parts.size != 2) {
+        val json = JSONObject(responseText)
+        val routes = json.getJSONArray("routes")
 
-        Log.d(
-            "WAYPASS_MAP",
-            "INVALID PARTS SIZE"
+        if (routes.length() == 0) {
+            throw Exception("No se encontró ruta")
+        }
+
+        val route = routes.getJSONObject(0)
+        val encodedPolyline = route
+            .getJSONObject("polyline")
+            .getString("encodedPolyline")
+
+        val decodedPoints = decodePolyline(encodedPolyline)
+
+        val durationSeconds = route
+            .optString("duration", "0s")
+            .replace("s", "")
+            .toIntOrNull() ?: 0
+
+        val distanceMeters = route.optInt("distanceMeters", 0)
+
+        GoogleRouteResult(
+            points = decodedPoints,
+            durationText = "${durationSeconds / 60} min",
+            distanceText = String.format("%.2f km", distanceMeters / 1000.0)
         )
-
-        return null
     }
+}
 
-    val lat =
-        parts[0].trim().toDoubleOrNull()
+fun latLngWaypoint(point: LatLng): JSONObject {
+    return JSONObject().apply {
+        put(
+            "location",
+            JSONObject().apply {
+                put(
+                    "latLng",
+                    JSONObject().apply {
+                        put("latitude", point.latitude)
+                        put("longitude", point.longitude)
+                    }
+                )
+            }
+        )
+    }
+}
 
-    val lng =
-        parts[1].trim().toDoubleOrNull()
+fun extractLatLngFromGoogleMapsUrl(url: String?): LatLng? {
+    if (url.isNullOrBlank()) return null
 
-    Log.d(
-        "WAYPASS_MAP",
-        "LAT -> $lat | LNG -> $lng"
-    )
+    val regex = Regex("(-?\\d+\\.\\d+),\\s*(-?\\d+\\.\\d+)")
+    val match = regex.find(url) ?: return null
+
+    val lat = match.groupValues[1].toDoubleOrNull()
+    val lng = match.groupValues[2].toDoubleOrNull()
 
     return if (lat != null && lng != null) {
-
         LatLng(lat, lng)
-
     } else {
-
-        Log.d(
-            "WAYPASS_MAP",
-            "FAILED TO PARSE LAT LNG"
-        )
-
         null
     }
+}
+
+fun decodePolyline(encoded: String): List<LatLng> {
+    val polyline = mutableListOf<LatLng>()
+    var index = 0
+    val length = encoded.length
+    var lat = 0
+    var lng = 0
+
+    while (index < length) {
+        var result = 0
+        var shift = 0
+        var b: Int
+
+        do {
+            b = encoded[index++].code - 63
+            result = result or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+
+        val deltaLat = if ((result and 1) != 0) {
+            (result shr 1).inv()
+        } else {
+            result shr 1
+        }
+
+        lat += deltaLat
+
+        result = 0
+        shift = 0
+
+        do {
+            b = encoded[index++].code - 63
+            result = result or ((b and 0x1f) shl shift)
+            shift += 5
+        } while (b >= 0x20)
+
+        val deltaLng = if ((result and 1) != 0) {
+            (result shr 1).inv()
+        } else {
+            result shr 1
+        }
+
+        lng += deltaLng
+
+        polyline.add(
+            LatLng(
+                lat / 1E5,
+                lng / 1E5
+            )
+        )
+    }
+
+    return polyline
 }

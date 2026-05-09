@@ -59,11 +59,13 @@ fun DriverNavigationScreen(
             )
 
             1 -> DriverStopsScreen(
-                companyId = companyId
+                companyId = companyId,
+                paddingValues = paddingValues
             )
 
             2 -> DriverRoutesScreen(
                 companyId = companyId,
+                paddingValues = paddingValues,
                 onViewMapClick = onViewMapClick
             )
 

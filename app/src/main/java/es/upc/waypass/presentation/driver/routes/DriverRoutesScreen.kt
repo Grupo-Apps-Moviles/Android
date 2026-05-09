@@ -27,6 +27,7 @@ data class ScheduleFormState(
 @Composable
 fun DriverRoutesScreen(
     companyId: Int,
+    paddingValues: PaddingValues,
     onViewMapClick: (RouteDto) -> Unit = {},
     viewModel: DriverRoutesViewModel = viewModel()
 ) {
@@ -62,6 +63,7 @@ fun DriverRoutesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0B3D5C))
+            .padding(paddingValues)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {

@@ -27,6 +27,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 @Composable
 fun DriverStopsScreen(
     companyId: Int,
+    paddingValues: PaddingValues,
     viewModel: DriverStopsViewModel = viewModel(),
     geographicViewModel: GeographicViewModel = viewModel()
 ) {
@@ -67,6 +68,7 @@ fun DriverStopsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0B3D5C))
+            .padding(paddingValues)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {

@@ -67,6 +67,8 @@ fun DriverStopsScreen(
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
+    var showMapPicker by remember { mutableStateOf(false) }
+
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
@@ -116,6 +118,16 @@ fun DriverStopsScreen(
         }
     }
 
+    if (showMapPicker) {
+        MapPickerScreen(
+            onLocationSelected = { coordinates ->
+                mapsUrl = coordinates
+                showMapPicker = false
+            }
+        )
+        return
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -154,6 +166,10 @@ fun DriverStopsScreen(
 
                 mapsUrl = mapsUrl,
                 onMapsUrlChange = { mapsUrl = it },
+
+                onSelectLocationClick = {
+                    showMapPicker = true
+                },
 
                 phone = phone,
                 onPhoneChange = { phone = it },
@@ -437,6 +453,7 @@ fun StopFormCard(
 
     mapsUrl: String,
     onMapsUrlChange: (String) -> Unit,
+    onSelectLocationClick: () -> Unit,
 
     phone: String,
     onPhoneChange: (String) -> Unit,
@@ -510,6 +527,19 @@ fun StopFormCard(
                 supportingText = { Text("Ejemplo: -12.1586,-76.9918") },
                 singleLine = true
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = onSelectLocationClick,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4F46E5)
+                )
+            ) {
+                Text("Seleccionar ubicación en mapa")
+            }
+
 
             Spacer(modifier = Modifier.height(14.dp))
 

@@ -111,5 +111,16 @@ interface WayPassApiService {
         @Body stop: StopDto
     ): StopDto
 
+    @GET("geographic/regions")
+    suspend fun getRegions(): List<RegionDto>
 
+    @GET("geographic/provinces/region/{regionId}")
+    suspend fun getProvincesByRegion(
+        @Path("regionId") regionId: Int
+    ): List<ProvinceDto>
+
+    @GET("geographic/districts/province/{provinceId}")
+    suspend fun getDistrictsByProvince(
+        @Path("provinceId") provinceId: Int
+    ): List<DistrictDto>
 }

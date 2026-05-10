@@ -26,6 +26,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import es.upc.waypass.data.model.DistrictDto
+import es.upc.waypass.data.model.ProvinceDto
+import es.upc.waypass.data.model.RegionDto
 import es.upc.waypass.data.model.StopDto
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -52,8 +55,14 @@ fun DriverStopsScreen(
     var address by remember { mutableStateOf("") }
     var reference by remember { mutableStateOf("") }
 
+    var selectedRegionName by remember { mutableStateOf("Selecciona una región") }
+    var selectedProvinceName by remember { mutableStateOf("Selecciona una provincia") }
+
     var selectedDistrictId by remember { mutableStateOf<Int?>(null) }
     var selectedDistrictName by remember { mutableStateOf("Selecciona un distrito") }
+
+    var expandedRegion by remember { mutableStateOf(false) }
+    var expandedProvince by remember { mutableStateOf(false) }
     var expandedDistrict by remember { mutableStateOf(false) }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -72,8 +81,12 @@ fun DriverStopsScreen(
         phone = ""
         address = ""
         reference = ""
+
+        selectedRegionName = "Selecciona una región"
+        selectedProvinceName = "Selecciona una provincia"
         selectedDistrictId = null
         selectedDistrictName = "Selecciona un distrito"
+
         imageUri = null
     }
 
@@ -88,7 +101,6 @@ fun DriverStopsScreen(
         reference = stop.reference
 
         selectedDistrictId = stop.fkIdDistrict
-
         selectedDistrictName = geoState.districts
             .firstOrNull { it.id == stop.fkIdDistrict }
             ?.name ?: "Selecciona un distrito"
@@ -100,7 +112,7 @@ fun DriverStopsScreen(
     LaunchedEffect(companyId) {
         if (companyId != 0) {
             viewModel.loadStops(companyId)
-            geographicViewModel.loadDistricts()
+            geographicViewModel.loadRegions()
         }
     }
 
@@ -136,26 +148,61 @@ fun DriverStopsScreen(
             StopFormCard(
                 title = if (editingStop == null) "Nuevo Paradero" else "Editar Paradero",
                 saveButtonText = if (editingStop == null) "Guardar" else "Actualizar",
+
                 name = name,
                 onNameChange = { name = it },
+
                 mapsUrl = mapsUrl,
                 onMapsUrlChange = { mapsUrl = it },
+
                 phone = phone,
                 onPhoneChange = { phone = it },
+
                 address = address,
                 onAddressChange = { address = it },
+
                 reference = reference,
                 onReferenceChange = { reference = it },
+
+                regions = geoState.regions,
+                provinces = geoState.provinces,
+                districts = geoState.districts,
+
+                selectedRegionName = selectedRegionName,
+                expandedRegion = expandedRegion,
+                onOpenRegion = { expandedRegion = true },
+                onDismissRegion = { expandedRegion = false },
+                onSelectRegion = { region ->
+                    selectedRegionName = region.name
+                    selectedProvinceName = "Selecciona una provincia"
+                    selectedDistrictName = "Selecciona un distrito"
+                    selectedDistrictId = null
+                    expandedRegion = false
+                    geographicViewModel.loadProvincesByRegion(region.id)
+                },
+
+                selectedProvinceName = selectedProvinceName,
+                expandedProvince = expandedProvince,
+                onOpenProvince = { expandedProvince = true },
+                onDismissProvince = { expandedProvince = false },
+                onSelectProvince = { province ->
+                    selectedProvinceName = province.name
+                    selectedDistrictName = "Selecciona un distrito"
+                    selectedDistrictId = null
+                    expandedProvince = false
+                    geographicViewModel.loadDistrictsByProvince(province.id)
+                },
+
                 selectedDistrictName = selectedDistrictName,
                 expandedDistrict = expandedDistrict,
                 onOpenDistrict = { expandedDistrict = true },
                 onDismissDistrict = { expandedDistrict = false },
-                districts = geoState.districts,
                 onSelectDistrict = { district ->
                     selectedDistrictId = district.id
                     selectedDistrictName = district.name
                     expandedDistrict = false
                 },
+
                 imageUri = imageUri,
                 onSelectImageClick = {
                     imagePickerLauncher.launch("image/*")
@@ -289,9 +336,7 @@ fun StopSummaryCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Row(
@@ -341,9 +386,7 @@ fun EmptyStopsCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(360.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Column(
@@ -371,9 +414,7 @@ fun EmptyStopsCard(
 
             Button(
                 onClick = onNewStopClick,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF4F46E5)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5))
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -390,22 +431,44 @@ fun EmptyStopsCard(
 fun StopFormCard(
     title: String,
     saveButtonText: String,
+
     name: String,
     onNameChange: (String) -> Unit,
+
     mapsUrl: String,
     onMapsUrlChange: (String) -> Unit,
+
     phone: String,
     onPhoneChange: (String) -> Unit,
+
     address: String,
     onAddressChange: (String) -> Unit,
+
     reference: String,
     onReferenceChange: (String) -> Unit,
+
+    regions: List<RegionDto>,
+    provinces: List<ProvinceDto>,
+    districts: List<DistrictDto>,
+
+    selectedRegionName: String,
+    expandedRegion: Boolean,
+    onOpenRegion: () -> Unit,
+    onDismissRegion: () -> Unit,
+    onSelectRegion: (RegionDto) -> Unit,
+
+    selectedProvinceName: String,
+    expandedProvince: Boolean,
+    onOpenProvince: () -> Unit,
+    onDismissProvince: () -> Unit,
+    onSelectProvince: (ProvinceDto) -> Unit,
+
     selectedDistrictName: String,
     expandedDistrict: Boolean,
     onOpenDistrict: () -> Unit,
     onDismissDistrict: () -> Unit,
-    districts: List<es.upc.waypass.data.model.DistrictDto>,
-    onSelectDistrict: (es.upc.waypass.data.model.DistrictDto) -> Unit,
+    onSelectDistrict: (DistrictDto) -> Unit,
+
     imageUri: Uri?,
     onSelectImageClick: () -> Unit,
     onCancelClick: () -> Unit,
@@ -413,9 +476,7 @@ fun StopFormCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Column(
@@ -482,37 +543,46 @@ fun StopFormCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Box {
-                OutlinedButton(
-                    onClick = onOpenDistrict,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(selectedDistrictName)
-                }
+            GeographicDropdown(
+                text = selectedRegionName,
+                expanded = expandedRegion,
+                onOpen = onOpenRegion,
+                onDismiss = onDismissRegion,
+                items = regions,
+                itemText = { it.name },
+                onSelect = onSelectRegion
+            )
 
-                DropdownMenu(
-                    expanded = expandedDistrict,
-                    onDismissRequest = onDismissDistrict
-                ) {
-                    districts.forEach { district ->
-                        DropdownMenuItem(
-                            text = { Text(district.name) },
-                            onClick = {
-                                onSelectDistrict(district)
-                            }
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            GeographicDropdown(
+                text = selectedProvinceName,
+                expanded = expandedProvince,
+                onOpen = onOpenProvince,
+                onDismiss = onDismissProvince,
+                items = provinces,
+                itemText = { it.name },
+                onSelect = onSelectProvince
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            GeographicDropdown(
+                text = selectedDistrictName,
+                expanded = expandedDistrict,
+                onOpen = onOpenDistrict,
+                onDismiss = onDismissDistrict,
+                items = districts,
+                itemText = { it.name },
+                onSelect = onSelectDistrict
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
                 onClick = onSelectImageClick,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6366F1)
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
             ) {
                 Text("Seleccionar imagen")
             }
@@ -547,11 +617,52 @@ fun StopFormCard(
                 Button(
                     onClick = onSaveClick,
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4F46E5)
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5))
                 ) {
                     Text(saveButtonText)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun <T> GeographicDropdown(
+    text: String,
+    expanded: Boolean,
+    onOpen: () -> Unit,
+    onDismiss: () -> Unit,
+    items: List<T>,
+    itemText: (T) -> String,
+    onSelect: (T) -> Unit
+) {
+    Box {
+        OutlinedButton(
+            onClick = onOpen,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                color = Color(0xFF111827)
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismiss
+        ) {
+            if (items.isEmpty()) {
+                DropdownMenuItem(
+                    text = { Text("Sin datos disponibles") },
+                    onClick = {}
+                )
+            } else {
+                items.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(itemText(item)) },
+                        onClick = { onSelect(item) }
+                    )
                 }
             }
         }
@@ -572,9 +683,7 @@ fun StopItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
         Row(
@@ -623,9 +732,7 @@ fun StopItemCard(
                 )
             }
 
-            IconButton(
-                onClick = onEditClick
-            ) {
+            IconButton(onClick = onEditClick) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "Editar",
@@ -687,9 +794,7 @@ fun StopItemCard(
                         showDeleteDialog = false
                         onDeleteClick()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4F46E5)
-                    ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5)),
                     shape = RoundedCornerShape(50)
                 ) {
                     Text("Confirmar")

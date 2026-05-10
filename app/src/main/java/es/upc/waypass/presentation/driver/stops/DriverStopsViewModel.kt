@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -73,6 +74,46 @@ class DriverStopsViewModel : ViewModel() {
                 _state.value = _state.value.copy(
                     isLoading = false,
                     message = e.message ?: "Error creando paradero"
+                )
+            }
+        }
+    }
+
+    fun updateStop(
+        stopId: Int,
+        name: String,
+        mapsUrl: String,
+        phone: String,
+        companyId: Int,
+        address: String,
+        reference: String,
+        districtId: Int,
+        imageUrl: String
+    ) {
+        viewModelScope.launch {
+            try {
+                _state.value = _state.value.copy(isLoading = true, message = "")
+
+                val updatedStop = StopDto(
+                    id = stopId,
+                    name = name,
+                    googleMapsUrl = mapsUrl,
+                    imageUrl = imageUrl,
+                    phone = phone,
+                    fkIdCompany = companyId,
+                    address = address,
+                    reference = reference,
+                    fkIdDistrict = districtId
+                )
+
+                RetrofitClient.api.updateStop(stopId, updatedStop)
+
+                loadStops(companyId)
+
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    message = e.message ?: "Error al actualizar paradero"
                 )
             }
         }

@@ -6,6 +6,7 @@ import es.upc.waypass.data.model.CreateRouteRequest
 import es.upc.waypass.data.model.CreateScheduleRequest
 import es.upc.waypass.data.model.RouteDto
 import es.upc.waypass.data.model.StopDto
+import es.upc.waypass.data.model.UpdateRouteRequest
 import es.upc.waypass.data.remote.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -87,6 +88,40 @@ class DriverRoutesViewModel : ViewModel() {
                 _state.value = _state.value.copy(
                     isLoading = false,
                     message = e.message ?: "Error creando ruta"
+                )
+            }
+        }
+    }
+
+    fun updateRoute(
+        routeId: Int,
+        companyId: Int,
+        price: Double,
+        frequency: Int,
+        duration: Int,
+        stopsIds: List<Int>,
+        schedules: List<CreateScheduleRequest>
+    ) {
+        viewModelScope.launch {
+            try {
+                _state.value = _state.value.copy(isLoading = true, message = "")
+
+                val request = UpdateRouteRequest(
+                    price = price,
+                    duration = duration,
+                    frequency = frequency,
+                    stopsIds = stopsIds,
+                    schedules = schedules
+                )
+
+                RetrofitClient.api.updateRoute(routeId, request)
+
+                loadData(companyId)
+
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    message = e.message ?: "Error actualizando ruta"
                 )
             }
         }

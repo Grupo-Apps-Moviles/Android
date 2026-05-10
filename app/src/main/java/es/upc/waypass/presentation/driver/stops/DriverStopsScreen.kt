@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
+import es.upc.waypass.data.model.StopDto
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -41,6 +43,8 @@ fun DriverStopsScreen(
     val context = LocalContext.current
 
     var showForm by remember { mutableStateOf(false) }
+    var editingStop by remember { mutableStateOf<StopDto?>(null) }
+    var editingImageUrl by remember { mutableStateOf("") }
 
     var name by remember { mutableStateOf("") }
     var mapsUrl by remember { mutableStateOf("") }
@@ -58,6 +62,39 @@ fun DriverStopsScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         imageUri = uri
+    }
+
+    fun clearForm() {
+        editingStop = null
+        editingImageUrl = ""
+        name = ""
+        mapsUrl = ""
+        phone = ""
+        address = ""
+        reference = ""
+        selectedDistrictId = null
+        selectedDistrictName = "Selecciona un distrito"
+        imageUri = null
+    }
+
+    fun loadStopToForm(stop: StopDto) {
+        editingStop = stop
+        editingImageUrl = stop.imageUrl ?: ""
+
+        name = stop.name
+        mapsUrl = stop.googleMapsUrl ?: ""
+        phone = stop.phone
+        address = stop.address
+        reference = stop.reference
+
+        selectedDistrictId = stop.fkIdDistrict
+
+        selectedDistrictName = geoState.districts
+            .firstOrNull { it.id == stop.fkIdDistrict }
+            ?.name ?: "Selecciona un distrito"
+
+        imageUri = null
+        showForm = true
     }
 
     LaunchedEffect(companyId) {
@@ -97,6 +134,8 @@ fun DriverStopsScreen(
 
         if (showForm) {
             StopFormCard(
+                title = if (editingStop == null) "Nuevo Paradero" else "Editar Paradero",
+                saveButtonText = if (editingStop == null) "Guardar" else "Actualizar",
                 name = name,
                 onNameChange = { name = it },
                 mapsUrl = mapsUrl,
@@ -122,6 +161,7 @@ fun DriverStopsScreen(
                     imagePickerLauncher.launch("image/*")
                 },
                 onCancelClick = {
+                    clearForm()
                     showForm = false
                 },
                 onSaveClick = {
@@ -142,25 +182,32 @@ fun DriverStopsScreen(
                         }
                     }
 
-                    viewModel.createStop(
-                        name = name,
-                        mapsUrl = mapsUrl,
-                        phone = phone,
-                        companyId = companyId,
-                        address = address,
-                        reference = reference,
-                        districtId = selectedDistrictId ?: 0,
-                        imageFile = imagePart
-                    )
+                    if (editingStop == null) {
+                        viewModel.createStop(
+                            name = name,
+                            mapsUrl = mapsUrl,
+                            phone = phone,
+                            companyId = companyId,
+                            address = address,
+                            reference = reference,
+                            districtId = selectedDistrictId ?: 0,
+                            imageFile = imagePart
+                        )
+                    } else {
+                        viewModel.updateStop(
+                            stopId = editingStop!!.id,
+                            name = name,
+                            mapsUrl = mapsUrl,
+                            phone = phone,
+                            companyId = companyId,
+                            address = address,
+                            reference = reference,
+                            districtId = selectedDistrictId ?: 0,
+                            imageUrl = editingImageUrl
+                        )
+                    }
 
-                    name = ""
-                    mapsUrl = ""
-                    phone = ""
-                    address = ""
-                    reference = ""
-                    selectedDistrictId = null
-                    selectedDistrictName = "Selecciona un distrito"
-                    imageUri = null
+                    clearForm()
                     showForm = false
                 }
             )
@@ -170,12 +217,16 @@ fun DriverStopsScreen(
             if (state.stops.isEmpty()) {
                 EmptyStopsCard(
                     onNewStopClick = {
+                        clearForm()
                         showForm = true
                     }
                 )
             } else {
                 Button(
-                    onClick = { showForm = true },
+                    onClick = {
+                        clearForm()
+                        showForm = true
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4F46E5)
@@ -196,6 +247,9 @@ fun DriverStopsScreen(
                         name = stop.name,
                         address = stop.address,
                         reference = stop.reference,
+                        onEditClick = {
+                            loadStopToForm(stop)
+                        },
                         onDeleteClick = {
                             viewModel.deleteStop(stop.id, companyId)
                         }
@@ -334,6 +388,8 @@ fun EmptyStopsCard(
 
 @Composable
 fun StopFormCard(
+    title: String,
+    saveButtonText: String,
     name: String,
     onNameChange: (String) -> Unit,
     mapsUrl: String,
@@ -368,7 +424,7 @@ fun StopFormCard(
                 .padding(20.dp)
         ) {
             Text(
-                text = "Nuevo Paradero",
+                text = title,
                 style = MaterialTheme.typography.titleLarge,
                 color = Color(0xFF111827)
             )
@@ -495,7 +551,7 @@ fun StopFormCard(
                         containerColor = Color(0xFF4F46E5)
                     )
                 ) {
-                    Text("Guardar")
+                    Text(saveButtonText)
                 }
             }
         }
@@ -507,6 +563,7 @@ fun StopItemCard(
     name: String,
     address: String,
     reference: String,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -563,6 +620,16 @@ fun StopItemCard(
                     text = reference,
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF9CA3AF)
+                )
+            }
+
+            IconButton(
+                onClick = onEditClick
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Editar",
+                    tint = Color(0xFF4F46E5)
                 )
             }
 
@@ -643,4 +710,3 @@ fun StopItemCard(
         )
     }
 }
-

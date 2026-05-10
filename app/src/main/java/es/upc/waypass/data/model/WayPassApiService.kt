@@ -105,4 +105,11 @@ interface WayPassApiService {
         @Path("id") routeId: Int
     )
 
+    @PUT("stops/{id}")
+    suspend fun updateStop(
+        @Path("id") id: Int,
+        @Body stop: StopDto
+    ): StopDto
+
+
 }

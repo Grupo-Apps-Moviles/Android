@@ -23,7 +23,7 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-private const val GOOGLE_ROUTES_API_KEY = "AIzaSyAuTncWDz3h-Qkr32CZmk6gJZqqi7ev56A"
+private const val GOOGLE_ROUTES_API_KEY = "AIzaSyDun8E59XSJAYnwH9SSPGUtMPhjyPaJAKU"
 
 @Composable
 fun DriverRouteMapScreen(
@@ -175,56 +175,73 @@ suspend fun fetchGoogleRoute(points: List<LatLng>): GoogleRouteResult {
         val url = URL("https://routes.googleapis.com/directions/v2:computeRoutes")
         val connection = url.openConnection() as HttpURLConnection
 
-        connection.requestMethod = "POST"
-        connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("X-Goog-Api-Key", GOOGLE_ROUTES_API_KEY)
-        connection.setRequestProperty(
-            "X-Goog-FieldMask",
-            "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline"
-        )
-        connection.doOutput = true
+        try {
+            connection.requestMethod = "POST"
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("X-Goog-Api-Key", GOOGLE_ROUTES_API_KEY)
+            connection.setRequestProperty(
+                "X-Goog-FieldMask",
+                "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline"
+            )
+            connection.doOutput = true
 
-        connection.outputStream.use { output ->
-            output.write(requestJson.toString().toByteArray())
+            connection.outputStream.use { output ->
+                output.write(requestJson.toString().toByteArray(Charsets.UTF_8))
+            }
+
+            val responseCode = connection.responseCode
+            val responseText = if (responseCode in 200..299) {
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+            }
+
+            Log.d("WAYPASS_MAP", "Routes responseCode: $responseCode")
+            Log.d("WAYPASS_MAP", "Routes responseBody: $responseText")
+
+            val json = JSONObject(responseText)
+
+            if (json.has("error")) {
+                throw Exception("Google Routes API error: ${json.getJSONObject("error")}")
+            }
+
+            if (!json.has("routes")) {
+                throw Exception("La respuesta no contiene routes: $responseText")
+            }
+
+            val routes = json.getJSONArray("routes")
+
+            if (routes.length() == 0) {
+                throw Exception("No se encontró ruta disponible")
+            }
+
+            val route = routes.getJSONObject(0)
+
+            if (!route.has("polyline")) {
+                throw Exception("La ruta no contiene polyline: $responseText")
+            }
+
+            val encodedPolyline = route
+                .getJSONObject("polyline")
+                .getString("encodedPolyline")
+
+            val decodedPoints = decodePolyline(encodedPolyline)
+
+            val durationSeconds = route
+                .optString("duration", "0s")
+                .replace("s", "")
+                .toIntOrNull() ?: 0
+
+            val distanceMeters = route.optInt("distanceMeters", 0)
+
+            GoogleRouteResult(
+                points = decodedPoints,
+                durationText = "${durationSeconds / 60} min",
+                distanceText = String.format("%.2f km", distanceMeters / 1000.0)
+            )
+        } finally {
+            connection.disconnect()
         }
-
-        val responseCode = connection.responseCode
-        val responseText = if (responseCode in 200..299) {
-            connection.inputStream.bufferedReader().use { it.readText() }
-        } else {
-            connection.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-        }
-
-        if (responseCode !in 200..299) {
-            throw Exception("HTTP $responseCode: $responseText")
-        }
-
-        val json = JSONObject(responseText)
-        val routes = json.getJSONArray("routes")
-
-        if (routes.length() == 0) {
-            throw Exception("No se encontró ruta")
-        }
-
-        val route = routes.getJSONObject(0)
-        val encodedPolyline = route
-            .getJSONObject("polyline")
-            .getString("encodedPolyline")
-
-        val decodedPoints = decodePolyline(encodedPolyline)
-
-        val durationSeconds = route
-            .optString("duration", "0s")
-            .replace("s", "")
-            .toIntOrNull() ?: 0
-
-        val distanceMeters = route.optInt("distanceMeters", 0)
-
-        GoogleRouteResult(
-            points = decodedPoints,
-            durationText = "${durationSeconds / 60} min",
-            distanceText = String.format("%.2f km", distanceMeters / 1000.0)
-        )
     }
 }
 

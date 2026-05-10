@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Schedule
@@ -29,6 +29,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.R
 import es.upc.waypass.data.model.CreateScheduleRequest
 import es.upc.waypass.data.model.RouteDto
+import es.upc.waypass.data.model.StopDto
 
 data class ScheduleFormState(
     val day: String,
@@ -48,6 +49,7 @@ fun DriverRoutesScreen(
 
     var showRouteForm by remember { mutableStateOf(false) }
     var showScheduleForm by remember { mutableStateOf(false) }
+    var editingRoute by remember { mutableStateOf<RouteDto?>(null) }
 
     var price by remember { mutableStateOf("") }
     var frequency by remember { mutableStateOf("") }
@@ -71,6 +73,56 @@ fun DriverRoutesScreen(
             ScheduleFormState("Sábado"),
             ScheduleFormState("Domingo")
         )
+    }
+
+    fun clearRouteForm() {
+        editingRoute = null
+
+        price = ""
+        frequency = ""
+        duration = ""
+
+        firstStopId = null
+        secondStopId = null
+        firstStopName = "Seleccionar paradero inicial"
+        secondStopName = "Seleccionar siguiente paradero"
+
+        schedules.forEachIndexed { index, item ->
+            schedules[index] = item.copy(
+                enabled = false,
+                startTime = "",
+                endTime = ""
+            )
+        }
+    }
+
+    fun loadRouteToForm(route: RouteDto) {
+        editingRoute = route
+
+        price = route.price.toString()
+        frequency = route.frequency.toString()
+        duration = route.duration.toString()
+
+        firstStopId = route.stops.getOrNull(0)?.id
+        secondStopId = route.stops.getOrNull(1)?.id
+
+        firstStopName = route.stops.getOrNull(0)?.name ?: "Seleccionar paradero inicial"
+        secondStopName = route.stops.getOrNull(1)?.name ?: "Seleccionar siguiente paradero"
+
+        schedules.forEachIndexed { index, item ->
+            val existingSchedule = route.schedules.firstOrNull {
+                it.dayOfWeek == item.day
+            }
+
+            schedules[index] = item.copy(
+                enabled = existingSchedule != null,
+                startTime = existingSchedule?.startTime ?: "",
+                endTime = existingSchedule?.endTime ?: ""
+            )
+        }
+
+        showRouteForm = true
+        showScheduleForm = false
     }
 
     LaunchedEffect(companyId) {
@@ -109,6 +161,7 @@ fun DriverRoutesScreen(
 
         if (showRouteForm) {
             CreateRouteCard(
+                title = if (editingRoute == null) "Crear Ruta" else "Editar Ruta",
                 price = price,
                 onPriceChange = { price = it },
                 frequency = frequency,
@@ -135,6 +188,7 @@ fun DriverRoutesScreen(
                     secondStopExpanded = false
                 },
                 onCancelClick = {
+                    clearRouteForm()
                     showRouteForm = false
                 },
                 onContinueClick = {
@@ -166,31 +220,28 @@ fun DriverRoutesScreen(
                             )
                         }
 
-                    viewModel.createRoute(
-                        companyId = companyId,
-                        price = price.toDoubleOrNull() ?: 0.0,
-                        frequency = frequency.toIntOrNull() ?: 0,
-                        duration = duration.toIntOrNull() ?: 0,
-                        stopsIds = selectedStops,
-                        schedules = selectedSchedules
-                    )
-
-                    price = ""
-                    frequency = ""
-                    duration = ""
-                    firstStopId = null
-                    secondStopId = null
-                    firstStopName = "Seleccionar paradero inicial"
-                    secondStopName = "Seleccionar siguiente paradero"
-
-                    schedules.forEachIndexed { index, item ->
-                        schedules[index] = item.copy(
-                            enabled = false,
-                            startTime = "",
-                            endTime = ""
+                    if (editingRoute == null) {
+                        viewModel.createRoute(
+                            companyId = companyId,
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            frequency = frequency.toIntOrNull() ?: 0,
+                            duration = duration.toIntOrNull() ?: 0,
+                            stopsIds = selectedStops,
+                            schedules = selectedSchedules
+                        )
+                    } else {
+                        viewModel.updateRoute(
+                            routeId = editingRoute!!.id,
+                            companyId = companyId,
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            frequency = frequency.toIntOrNull() ?: 0,
+                            duration = duration.toIntOrNull() ?: 0,
+                            stopsIds = selectedStops,
+                            schedules = selectedSchedules
                         )
                     }
 
+                    clearRouteForm()
                     showScheduleForm = false
                 }
             )
@@ -198,12 +249,16 @@ fun DriverRoutesScreen(
             if (state.routes.isEmpty()) {
                 EmptyRoutesCard(
                     onNewRouteClick = {
+                        clearRouteForm()
                         showRouteForm = true
                     }
                 )
             } else {
                 Button(
-                    onClick = { showRouteForm = true },
+                    onClick = {
+                        clearRouteForm()
+                        showRouteForm = true
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF4F46E5)
@@ -224,6 +279,9 @@ fun DriverRoutesScreen(
                         route = route,
                         onViewMapClick = {
                             onViewMapClick(route)
+                        },
+                        onEditClick = {
+                            loadRouteToForm(route)
                         },
                         onDeleteClick = {
                             viewModel.deleteRoute(route.id, companyId)
@@ -351,23 +409,24 @@ fun EmptyRoutesCard(
 
 @Composable
 fun CreateRouteCard(
+    title: String,
     price: String,
     onPriceChange: (String) -> Unit,
     frequency: String,
     onFrequencyChange: (String) -> Unit,
     duration: String,
     onDurationChange: (String) -> Unit,
-    stops: List<es.upc.waypass.data.model.StopDto>,
+    stops: List<StopDto>,
     firstStopName: String,
     firstStopExpanded: Boolean,
     onOpenFirstStop: () -> Unit,
     onDismissFirstStop: () -> Unit,
-    onSelectFirstStop: (es.upc.waypass.data.model.StopDto) -> Unit,
+    onSelectFirstStop: (StopDto) -> Unit,
     secondStopName: String,
     secondStopExpanded: Boolean,
     onOpenSecondStop: () -> Unit,
     onDismissSecondStop: () -> Unit,
-    onSelectSecondStop: (es.upc.waypass.data.model.StopDto) -> Unit,
+    onSelectSecondStop: (StopDto) -> Unit,
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit
 ) {
@@ -387,7 +446,7 @@ fun CreateRouteCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Crear Ruta",
+                    text = title,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color(0xFF111827),
                     modifier = Modifier.weight(1f)
@@ -535,10 +594,10 @@ fun CreateRouteCard(
 fun StopDropdownButton(
     text: String,
     expanded: Boolean,
-    stops: List<es.upc.waypass.data.model.StopDto>,
+    stops: List<StopDto>,
     onOpen: () -> Unit,
     onDismiss: () -> Unit,
-    onSelectStop: (es.upc.waypass.data.model.StopDto) -> Unit
+    onSelectStop: (StopDto) -> Unit
 ) {
     Box {
         OutlinedButton(
@@ -745,6 +804,7 @@ fun ScheduleDayCard(
 fun RouteItemCard(
     route: RouteDto,
     onViewMapClick: () -> Unit,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     var showDeleteDialog by remember {
@@ -812,7 +872,9 @@ fun RouteItemCard(
                 }
             }
 
-            Column {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Button(
                     onClick = onViewMapClick,
                     colors = ButtonDefaults.buttonColors(
@@ -820,6 +882,16 @@ fun RouteItemCard(
                     )
                 ) {
                     Text("Ver mapa")
+                }
+
+                IconButton(
+                    onClick = onEditClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        tint = Color(0xFF4F46E5)
+                    )
                 }
 
                 IconButton(

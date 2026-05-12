@@ -120,13 +120,13 @@ fun DriverDashboardScreen(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
-            if (!state.isLoading) {
-                Text(
-                    text = "Actualizado",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+//            if (!state.isLoading) {
+//                Text(
+//                    text = "Actualizado",
+//                    style = MaterialTheme.typography.labelSmall,
+//                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))

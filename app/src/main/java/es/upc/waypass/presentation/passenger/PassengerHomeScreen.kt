@@ -23,7 +23,7 @@ fun PassengerHomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B3D5C))
+            .background(MaterialTheme.colorScheme.primary)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -86,7 +86,7 @@ fun PassengerOptionCard(
             .fillMaxWidth()
             .padding(bottom = 14.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF4FAFF)
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
@@ -101,7 +101,7 @@ fun PassengerOptionCard(
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = Color(0xFF0B3D5C),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(42.dp)
             )
 
@@ -110,7 +110,7 @@ fun PassengerOptionCard(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF0B3D5C),
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
 

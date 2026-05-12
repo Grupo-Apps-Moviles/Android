@@ -86,7 +86,7 @@ fun DriverRouteMapScreen(
                 Polyline(
                     points = realRoutePoints,
                     width = 10f,
-                    color = Color(0xFF4F46E5)
+                    color = MaterialTheme.colorScheme.primary
                 )
             } else if (routePoints.size >= 2) {
                 Polyline(

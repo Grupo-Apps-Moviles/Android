@@ -30,14 +30,14 @@ fun CreateCompanyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B3D5C))
+            .background(MaterialTheme.colorScheme.primary)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF4FAFF)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
             Column(
@@ -47,7 +47,7 @@ fun CreateCompanyScreen(
                 Text(
                     text = "Crear empresa",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = Color(0xFF0B3D5C)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -87,7 +87,7 @@ fun CreateCompanyScreen(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0B3D5C)
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     if (state.isLoading) {

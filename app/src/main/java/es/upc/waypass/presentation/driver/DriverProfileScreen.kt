@@ -26,7 +26,7 @@ fun DriverProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .padding(horizontal = 24.dp)
     ) {
@@ -36,7 +36,7 @@ fun DriverProfileScreen(
         Text(
             text = "Perfil",
             style = MaterialTheme.typography.headlineMedium,
-            color = Color(0xFF111827)
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -64,13 +64,13 @@ fun DriverProfileScreen(
                     modifier = Modifier
                         .size(82.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFEDEBFF)),
+                        .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Perfil",
-                        tint = Color(0xFF4F46E5),
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(42.dp)
                     )
                 }
@@ -80,7 +80,7 @@ fun DriverProfileScreen(
                 Text(
                     text = companyName,
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color(0xFF111827)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
@@ -153,13 +153,13 @@ fun ProfileInfoCard(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFEDEBFF)),
+                    .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    tint = Color(0xFF4F46E5)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 
@@ -175,7 +175,7 @@ fun ProfileInfoCard(
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF111827)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

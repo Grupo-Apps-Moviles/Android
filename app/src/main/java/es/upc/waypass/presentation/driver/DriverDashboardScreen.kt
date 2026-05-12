@@ -1,20 +1,51 @@
 package es.upc.waypass.presentation.driver
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachMoney
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.Business
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Route
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.presentation.driver.dashboard.DriverDashboardViewModel
+import es.upc.waypass.ui.theme.PurpleLight
 
 @Composable
 fun DriverDashboardScreen(
@@ -26,60 +57,112 @@ fun DriverDashboardScreen(
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(companyId) {
-        if (companyId != 0) {
-            viewModel.loadDashboard(companyId)
-        }
+        if (companyId != 0) viewModel.loadDashboard(companyId)
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .padding(paddingValues)
-            .padding(20.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
-        Text(
-            text = "¡Conductor, te damos la bienvenida!",
-            style = MaterialTheme.typography.headlineMedium,
-            color = Color(0xFF1E293B)
-        )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        // ── Header: saludo + avatar ───────────────────────────────────────────
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "¡Bienvenido!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = companyName,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
 
-        Text(
-            text = companyName,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF64748B)
-        )
+            // Avatar con inicial de la empresa
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = companyName.firstOrNull()?.uppercaseChar()?.toString() ?: "W",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Resumen General",
-            style = MaterialTheme.typography.titleMedium,
-            color = Color(0xFF1E293B)
-        )
+        // ── Sección: Resumen ──────────────────────────────────────────────────
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Resumen General",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            if (!state.isLoading) {
+                Text(
+                    text = "Actualizado",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
+        // ── Cards de stats ────────────────────────────────────────────────────
         if (state.isLoading) {
-            CircularProgressIndicator()
+            // Skeleton loading
+            repeat(2) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    repeat(2) {
+                        SkeletonCard(modifier = Modifier.weight(1f))
+                    }
+                }
+                if (it == 0) Spacer(modifier = Modifier.height(14.dp))
+            }
         } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 SummaryCard(
-                    title = "TARIFA PROMEDIO",
+                    title = "Tarifa Promedio",
                     value = "S/ ${String.format("%.2f", state.averagePrice)}",
-                    icon = Icons.Default.AttachMoney,
+                    icon = Icons.Outlined.AttachMoney,
+                    //accentColor = Color(0xFF0EA5E9), color azul
+                    accentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-
                 SummaryCard(
-                    title = "TOTAL PARADEROS",
+                    title = "Paraderos",
                     value = state.stopsCount.toString(),
-                    icon = Icons.Default.LocationOn,
+                    icon = Icons.Outlined.LocationOn,
+                    accentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -91,75 +174,175 @@ fun DriverDashboardScreen(
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 SummaryCard(
-                    title = "TOTAL DE RUTAS",
+                    title = "Rutas Activas",
                     value = state.routesCount.toString(),
-                    icon = Icons.Default.Route,
+                    icon = Icons.Outlined.Route,
+                    //accentColor = Color(0xFF10B981), //color verde
+                    accentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
-
                 SummaryCard(
-                    title = "INTERVALO PROM.",
+                    title = "Intervalo Prom.",
                     value = "${state.averageFrequency} min",
-                    icon = Icons.Default.Schedule,
+                    icon = Icons.Outlined.Schedule,
+                    //accentColor = Color(0xFFF59E0B), //color naranja
+                    accentColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
             }
         }
 
+        // ── Error ─────────────────────────────────────────────────────────────
         if (state.message.isNotBlank()) {
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = state.message,
-                color = Color.Red
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = state.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+//        // ── Banner de empresa ─────────────────────────────────────────────────
+//        CompanyBannerCard(companyName = companyName)
+//
+//        Spacer(modifier = Modifier.height(24.dp))
+//
+//        // ── Accesos rápidos ───────────────────────────────────────────────────
+//        Text(
+//            text = "Accesos Rápidos",
+//            style = MaterialTheme.typography.titleMedium,
+//            color = MaterialTheme.colorScheme.onSurface
+//        )
+//
+//        Spacer(modifier = Modifier.height(12.dp))
+
+//        Row(
+//            modifier = Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.spacedBy(12.dp)
+//        ) {
+//            QuickAccessCard(
+//                icon = Icons.Outlined.Route,
+//                label = "Rutas",
+//                modifier = Modifier.weight(1f)
+//            )
+//            QuickAccessCard(
+//                icon = Icons.Outlined.LocationOn,
+//                label = "Paraderos",
+//                modifier = Modifier.weight(1f)
+//            )
+//            QuickAccessCard(
+//                icon = Icons.Outlined.Person,
+//                label = "Perfil",
+//                modifier = Modifier.weight(1f)
+//            )
+//        }
+
+        Spacer(modifier = Modifier.height(80.dp))
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPONENTES
+// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun SummaryCard(
     title: String,
     value: String,
     icon: ImageVector,
+    accentColor: Color,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.height(115.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
-        )
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                tint = Color(0xFF4F46E5),
-                modifier = Modifier.size(26.dp)
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Barra de acento izquierda
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(
+                        color = accentColor,
+                        shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                    )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Ícono en chip redondeado
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .background(
+                            color = accentColor.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(10.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        tint = accentColor,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF475569)
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFF0F172A)
-            )
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = 0.3.sp
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
+}
+
+@Composable
+fun SkeletonCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.height(120.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {}
 }

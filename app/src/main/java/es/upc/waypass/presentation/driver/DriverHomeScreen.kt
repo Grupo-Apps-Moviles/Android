@@ -50,7 +50,7 @@ fun DriverHomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B3D5C))
+            .background(MaterialTheme.colorScheme.primary)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -65,13 +65,13 @@ fun DriverHomeScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF4FAFF))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 Text(
                     text = state.company?.name ?: "Cargando empresa...",
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color(0xFF0B3D5C)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -114,7 +114,7 @@ fun DriverOptionCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF4FAFF)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Row(
@@ -124,7 +124,7 @@ fun DriverOptionCard(
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = Color(0xFF0B3D5C),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(36.dp)
             )
 
@@ -134,7 +134,7 @@ fun DriverOptionCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color(0xFF0B3D5C)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = description,

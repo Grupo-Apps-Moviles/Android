@@ -13,7 +13,7 @@ fun DriverRoutesPlaceholderScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B3D5C))
+            .background(MaterialTheme.colorScheme.primary)
             .padding(24.dp)
     ) {
         Text(

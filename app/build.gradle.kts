@@ -34,26 +34,37 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures {
         compose = true
     }
 }
 
+
+kotlin {
+    jvmToolchain(17)
+}
+
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
     implementation(platform(libs.androidx.compose.bom))
+
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.ui.text)
 
     // Retrofit
     implementation(libs.retrofit)
@@ -63,42 +74,40 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
-    //google maps
-    implementation("com.google.maps.android:maps-compose:2.11.4")
+    // Google Maps
+    implementation("com.google.maps.android:maps-compose:4.3.3")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
 
     // Coil
     implementation(libs.coil)
     implementation(libs.coil.network)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Kotlin serialization
     implementation(libs.kotlin.serialization.json)
-    implementation(libs.play.services.maps)
-    implementation(libs.androidx.compose.ui.text)
 
     // Room
     implementation(libs.room.runtime)
-    ksp(libs.room.compiler)
     implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
+    // Browser / Chrome Tabs
+    implementation("androidx.browser:browser:1.8.0")
+
+    // Tests
     testImplementation(libs.junit)
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    //coil
-    implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("com.google.maps.android:maps-compose:4.3.3")
-    implementation("com.google.android.gms:play-services-maps:18.2.0")
-
-    // Chrome Custom Tabs
-    implementation("androidx.browser:browser:1.8.0")
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 }

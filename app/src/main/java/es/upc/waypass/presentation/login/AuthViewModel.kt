@@ -43,6 +43,8 @@ class AuthViewModel @Inject constructor(
                 )
 
                 tokenManager.saveToken(response.token)
+                tokenManager.saveUserId(response.id)
+                tokenManager.saveRole(response.role)
 
                 _state.value = AuthState(
                     success = true,

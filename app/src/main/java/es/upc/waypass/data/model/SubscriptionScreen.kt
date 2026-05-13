@@ -12,41 +12,48 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import es.upc.waypass.MainActivity
 
-/**
- * Pantalla de suscripción para conductores.
- *
- * Flujo:
- * 1. Usuario toca "Suscribirse"
- * 2. ViewModel llama al backend → recibe approvalUrl
- * 3. Compose detecta estado OpenPayPal → abre Chrome Custom Tabs
- * 4. Usuario aprueba en PayPal → regresa vía deep link waypass://paypal/success
- * 5. MainActivity detecta el deep link → llama checkSubscriptionStatus()
- */
 @Composable
 fun SubscriptionScreen(
     viewModel: SubscriptionViewModel = hiltViewModel(),
-    onSubscriptionActive: () -> Unit = {} // Navega a la pantalla principal
+    onSubscriptionActive: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Efecto: cuando el backend devuelve la URL, abrimos PayPal
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (MainActivity.paypalResult == "success") {
+                    MainActivity.paypalResult = null
+                    onSubscriptionActive()
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     LaunchedEffect(uiState) {
         if (uiState is SubscriptionUiState.OpenPayPal) {
             val url = (uiState as SubscriptionUiState.OpenPayPal).approvalUrl
             openPayPalInCustomTab(context, url)
-            viewModel.onPayPalOpened() // Reset para evitar re-open
+            viewModel.onPayPalOpened()
         }
 
         if (uiState is SubscriptionUiState.Active) {
             onSubscriptionActive()
         }
-    }
-
-    // Verificar estado al entrar a la pantalla
-    LaunchedEffect(Unit) {
-        viewModel.checkSubscriptionStatus()
     }
 
     Box(
@@ -66,7 +73,6 @@ fun SubscriptionScreen(
             }
 
             is SubscriptionUiState.Active -> {
-                // No debería verse — onSubscriptionActive() navega fuera
                 Text("✅ Suscripción activa hasta ${state.expiresAt ?: "N/A"}")
             }
 
@@ -84,7 +90,6 @@ fun SubscriptionScreen(
                 }
             }
 
-            // Idle o Inactive → mostrar botón de suscripción
             else -> {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -116,10 +121,6 @@ fun SubscriptionScreen(
     }
 }
 
-/**
- * Abre la URL de aprobación de PayPal en Chrome Custom Tabs.
- * El usuario aprueba sin salir de la app y vuelve vía deep link.
- */
 private fun openPayPalInCustomTab(context: Context, url: String) {
     CustomTabsIntent.Builder()
         .setShowTitle(true)

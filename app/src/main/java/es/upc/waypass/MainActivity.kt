@@ -5,11 +5,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import dagger.hilt.android.AndroidEntryPoint
+import es.upc.waypass.data.auth.TokenManager
 import es.upc.waypass.presentation.navigation.AppNavigation
 import es.upc.waypass.ui.theme.WayPassTheme
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
+    companion object {
+        var paypalResult: String? = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,13 +27,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WayPassTheme {
-                AppNavigation()
+                AppNavigation(tokenManager)
             }
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        setIntent(intent)
         handlePayPalDeepLink(intent)
     }
 
@@ -34,16 +44,11 @@ class MainActivity : ComponentActivity() {
         if (data.scheme == "waypass" && data.host == "paypal") {
             when (data.path) {
                 "/success" -> {
-                    startActivity(
-                        Intent(this, MainActivity::class.java).apply {
-                            putExtra("paypal_result", "success")
-                            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                        }
-                    )
+                    paypalResult = "success"
                 }
 
                 "/cancel" -> {
-                    // El conductor canceló en PayPal
+                    paypalResult = "cancel"
                 }
             }
         }

@@ -2,6 +2,7 @@ package es.upc.waypass.presentation.navigation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -9,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import es.upc.waypass.data.auth.TokenManager
 import es.upc.waypass.data.model.RouteDto
 import es.upc.waypass.data.model.SubscriptionScreen
 import es.upc.waypass.presentation.home.HomeScreen
@@ -18,9 +20,12 @@ import es.upc.waypass.presentation.passenger.PassengerHomeScreen
 import es.upc.waypass.presentation.driver.DriverHomeScreen
 import es.upc.waypass.presentation.driver.CreateCompanyScreen
 import es.upc.waypass.presentation.driver.routes.DriverRouteMapScreen
+import es.upc.waypass.presentation.splash.SplashScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    tokenManager: TokenManager
+) {
     val navController = rememberNavController()
 
     var loggedUserId by remember { mutableStateOf<Int?>(null) }
@@ -28,8 +33,45 @@ fun AppNavigation() {
     var selectedRoute by remember { mutableStateOf<RouteDto?>(null) }
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "splash"
     ) {
+
+        composable("splash") {
+
+            SplashScreen()
+
+            LaunchedEffect(Unit) {
+
+                val token = tokenManager.getToken()
+                val role = tokenManager.getRole()
+                val userId = tokenManager.getUserId()
+
+                loggedRole = role
+                loggedUserId = userId
+
+                when {
+
+                    token == null -> {
+                        navController.navigate("home") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+
+                    role == 1 -> {
+                        navController.navigate("driver") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+
+                    else -> {
+                        navController.navigate("passenger") {
+                            popUpTo("splash") { inclusive = true }
+                        }
+                    }
+                }
+            }
+        }
+
         composable("home") {
             HomeScreen(
                 padding = PaddingValues(),
@@ -93,6 +135,9 @@ fun AppNavigation() {
                 },
 
                 onLogoutClick = {
+
+                    tokenManager.clearSession()
+
                     loggedUserId = null
                     loggedRole = null
 

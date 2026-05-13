@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.ui.theme.PurpleLight
 import es.upc.waypass.ui.theme.PurpleMid
@@ -65,7 +66,7 @@ import es.upc.waypass.ui.theme.PurpleMid
 fun RegisterScreen(
     onBackClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }

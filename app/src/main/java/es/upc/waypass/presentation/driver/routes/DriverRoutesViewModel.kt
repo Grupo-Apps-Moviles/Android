@@ -2,15 +2,17 @@ package es.upc.waypass.presentation.driver.routes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import es.upc.waypass.data.model.CreateRouteRequest
 import es.upc.waypass.data.model.CreateScheduleRequest
 import es.upc.waypass.data.model.RouteDto
 import es.upc.waypass.data.model.StopDto
 import es.upc.waypass.data.model.UpdateRouteRequest
-import es.upc.waypass.data.remote.RetrofitClient
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class RoutesState(
     val isLoading: Boolean = false,
@@ -19,7 +21,10 @@ data class RoutesState(
     val message: String = ""
 )
 
-class DriverRoutesViewModel : ViewModel() {
+@HiltViewModel
+class DriverRoutesViewModel @Inject constructor(
+    private val api: WayPassApiService
+) : ViewModel() {
 
     private val _state = MutableStateFlow(RoutesState())
     val state: StateFlow<RoutesState> = _state
@@ -30,13 +35,13 @@ class DriverRoutesViewModel : ViewModel() {
                 _state.value = _state.value.copy(isLoading = true, message = "")
 
                 val stops = try {
-                    RetrofitClient.api.getStopsByCompany(companyId)
+                    api.getStopsByCompany(companyId)
                 } catch (e: Exception) {
                     emptyList()
                 }
 
                 val routes = try {
-                    RetrofitClient.api.getRoutesByCompany(companyId)
+                    api.getRoutesByCompany(companyId)
                 } catch (e: Exception) {
                     emptyList()
                 }
@@ -80,7 +85,7 @@ class DriverRoutesViewModel : ViewModel() {
                     schedules = schedules
                 )
 
-                RetrofitClient.api.createRoute(request)
+                api.createRoute(request)
 
                 loadData(companyId)
 
@@ -114,7 +119,7 @@ class DriverRoutesViewModel : ViewModel() {
                     schedules = schedules
                 )
 
-                RetrofitClient.api.updateRoute(routeId, request)
+                api.updateRoute(routeId, request)
 
                 loadData(companyId)
 
@@ -130,7 +135,7 @@ class DriverRoutesViewModel : ViewModel() {
     fun deleteRoute(routeId: Int, companyId: Int) {
         viewModelScope.launch {
             try {
-                RetrofitClient.api.deleteRoute(routeId)
+                api.deleteRoute(routeId)
                 loadData(companyId)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(

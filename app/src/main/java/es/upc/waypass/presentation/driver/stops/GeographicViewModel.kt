@@ -2,13 +2,15 @@ package es.upc.waypass.presentation.driver.stops
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import es.upc.waypass.data.model.DistrictDto
 import es.upc.waypass.data.model.ProvinceDto
 import es.upc.waypass.data.model.RegionDto
-import es.upc.waypass.data.remote.RetrofitClient
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class GeographicState(
     val regions: List<RegionDto> = emptyList(),
@@ -17,7 +19,10 @@ data class GeographicState(
     val message: String = ""
 )
 
-class GeographicViewModel : ViewModel() {
+@HiltViewModel
+class GeographicViewModel @Inject constructor(
+    private val api: WayPassApiService
+) : ViewModel() {
 
     private val _state = MutableStateFlow(GeographicState())
     val state: StateFlow<GeographicState> = _state
@@ -25,7 +30,7 @@ class GeographicViewModel : ViewModel() {
     fun loadRegions() {
         viewModelScope.launch {
             try {
-                val regions = RetrofitClient.api.getRegions()
+                val regions = api.getRegions()
                 _state.value = _state.value.copy(
                     regions = regions,
                     provinces = emptyList(),
@@ -43,7 +48,7 @@ class GeographicViewModel : ViewModel() {
     fun loadProvincesByRegion(regionId: Int) {
         viewModelScope.launch {
             try {
-                val provinces = RetrofitClient.api.getProvincesByRegion(regionId)
+                val provinces = api.getProvincesByRegion(regionId)
                 _state.value = _state.value.copy(
                     provinces = provinces,
                     districts = emptyList(),
@@ -60,7 +65,7 @@ class GeographicViewModel : ViewModel() {
     fun loadDistrictsByProvince(provinceId: Int) {
         viewModelScope.launch {
             try {
-                val districts = RetrofitClient.api.getDistrictsByProvince(provinceId)
+                val districts = api.getDistrictsByProvince(provinceId)
                 _state.value = _state.value.copy(
                     districts = districts,
                     message = ""

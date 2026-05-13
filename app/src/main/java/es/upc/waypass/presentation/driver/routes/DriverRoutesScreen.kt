@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.data.model.CreateScheduleRequest
 import es.upc.waypass.data.model.RouteDto
@@ -45,7 +46,7 @@ fun DriverRoutesScreen(
     companyId: Int,
     paddingValues: PaddingValues,
     onViewMapClick: (RouteDto) -> Unit = {},
-    viewModel: DriverRoutesViewModel = viewModel()
+    viewModel: DriverRoutesViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 

@@ -2,12 +2,16 @@ package es.upc.waypass.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import es.upc.waypass.MyApplication
+import es.upc.waypass.data.auth.TokenManager
 import es.upc.waypass.data.model.SignInRequest
 import es.upc.waypass.data.model.SignUpRequest
-import es.upc.waypass.data.remote.RetrofitClient
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class AuthState(
     val isLoading: Boolean = false,
@@ -17,7 +21,11 @@ data class AuthState(
     val role: Int? = null
 )
 
-class AuthViewModel : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val api: WayPassApiService,
+    private val tokenManager: TokenManager
+): ViewModel() {
 
     private val _state = MutableStateFlow(AuthState())
     val state: StateFlow<AuthState> = _state
@@ -27,12 +35,14 @@ class AuthViewModel : ViewModel() {
             try {
                 _state.value = AuthState(isLoading = true)
 
-                val response = RetrofitClient.api.signIn(
+                val response = api.signIn(
                     SignInRequest(
                         email = email.trim(),
                         password = password.trim()
                     )
                 )
+
+                tokenManager.saveToken(response.token)
 
                 _state.value = AuthState(
                     success = true,
@@ -61,7 +71,7 @@ class AuthViewModel : ViewModel() {
 
                 val role = if (userType == "Conductor") 1 else 0
 
-                RetrofitClient.api.signUp(
+                api.signUp(
                     SignUpRequest(
                         username = name.trim(),
                         email = email.trim(),

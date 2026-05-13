@@ -2,14 +2,16 @@ package es.upc.waypass.presentation.driver
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import es.upc.waypass.data.model.CompanyDto
-import es.upc.waypass.data.remote.RetrofitClient
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.HttpException
+import javax.inject.Inject
 
 data class DriverState(
     val isLoading: Boolean = false,
@@ -18,7 +20,10 @@ data class DriverState(
     val message: String = ""
 )
 
-class DriverViewModel : ViewModel() {
+@HiltViewModel
+class DriverViewModel @Inject constructor(
+    private val api: WayPassApiService
+) : ViewModel() {
 
     private val _state = MutableStateFlow(DriverState())
     val state: StateFlow<DriverState> = _state
@@ -28,7 +33,7 @@ class DriverViewModel : ViewModel() {
             try {
                 _state.value = DriverState(isLoading = true)
 
-                val company = RetrofitClient.api.getCompanyByUserId(userId)
+                val company = api.getCompanyByUserId(userId)
 
                 _state.value = DriverState(
                     company = company,
@@ -57,7 +62,7 @@ class DriverViewModel : ViewModel() {
                 val nameBody = name.trim().toRequestBody("text/plain".toMediaType())
                 val userIdBody = userId.toString().toRequestBody("text/plain".toMediaType())
 
-                val company = RetrofitClient.api.createCompany(
+                val company = api.createCompany(
                     name = nameBody,
                     fkIdUser = userIdBody
                 )

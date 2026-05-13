@@ -2,11 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
-
+    alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
     namespace = "es.upc.waypass"
+
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -63,6 +65,7 @@ dependencies {
 
     //google maps
     implementation("com.google.maps.android:maps-compose:2.11.4")
+
     // Coil
     implementation(libs.coil)
     implementation(libs.coil.network)
@@ -71,6 +74,15 @@ dependencies {
     implementation(libs.kotlin.serialization.json)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.compose.ui.text)
+
+    // Room
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
+    implementation(libs.room.ktx)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -81,8 +93,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     //coil
-
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("com.google.maps.android:maps-compose:4.3.3")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    // Chrome Custom Tabs
+    implementation("androidx.browser:browser:1.8.0")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 }

@@ -10,13 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun CreateCompanyScreen(
     userId: Int,
     onCompanyCreated: () -> Unit,
-    driverViewModel: DriverViewModel = viewModel()
+    driverViewModel: DriverViewModel = hiltViewModel()
 ) {
     var companyName by remember { mutableStateOf("") }
     val state by driverViewModel.state.collectAsState()

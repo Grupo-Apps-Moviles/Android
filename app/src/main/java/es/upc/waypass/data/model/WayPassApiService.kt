@@ -1,10 +1,5 @@
 package es.upc.waypass.data.model
 
-import es.upc.waypass.data.model.AuthenticatedUserResponse
-import es.upc.waypass.data.model.RouteDto
-import es.upc.waypass.data.model.SignInRequest
-import es.upc.waypass.data.model.SignUpRequest
-import es.upc.waypass.data.model.SignUpResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -45,6 +40,12 @@ interface WayPassApiService {
     suspend fun getCompanyByUserId(
         @Path("FKeyIdUser") userId: Int
     ): CompanyDto
+
+    @POST("v1/subscriptions")
+    suspend fun createSubscription(): CreateSubscriptionResponse
+
+    @GET("v1/subscriptions/me")
+    suspend fun getSubscriptionStatus(): SubscriptionStatusResponse
 
     @Multipart
     @POST("Companies")

@@ -13,16 +13,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.data.model.RouteDto
 
 @Composable
 fun DriverHomeScreen(
     userId: Int,
+    onSubscribeClick: () -> Unit,
     onCreateCompanyClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onViewMapClick: (RouteDto) -> Unit,
-    driverViewModel: DriverViewModel = viewModel()
+    driverViewModel: DriverViewModel = hiltViewModel()
 ) {
     val state by driverViewModel.state.collectAsState()
 
@@ -41,6 +43,7 @@ fun DriverHomeScreen(
             userId = userId,
             companyId = state.company!!.id,
             companyName = state.company!!.name,
+            onSubscribeClick = onSubscribeClick,
             onLogoutClick = onLogoutClick,
             onViewMapClick = onViewMapClick
         )

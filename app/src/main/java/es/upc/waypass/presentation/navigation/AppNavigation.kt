@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import es.upc.waypass.data.model.RouteDto
+import es.upc.waypass.data.model.SubscriptionScreen
 import es.upc.waypass.presentation.home.HomeScreen
 import es.upc.waypass.presentation.login.RegisterScreen
 import es.upc.waypass.presentation.passenger.ConsultarRutasScreen
@@ -83,6 +84,10 @@ fun AppNavigation() {
             DriverHomeScreen(
                 userId = loggedUserId ?: 0,
 
+                onSubscribeClick = {
+                    navController.navigate("subscription")
+                },
+
                 onCreateCompanyClick = {
                     navController.navigate("create_company")
                 },
@@ -99,6 +104,16 @@ fun AppNavigation() {
                 onViewMapClick = { route ->
                     selectedRoute = route
                     navController.navigate("driver_route_map")
+                }
+            )
+        }
+
+        composable("subscription") {
+            SubscriptionScreen(
+                onSubscriptionActive = {
+                    navController.navigate("driver") {
+                        popUpTo("subscription") { inclusive = true }
+                    }
                 }
             )
         }

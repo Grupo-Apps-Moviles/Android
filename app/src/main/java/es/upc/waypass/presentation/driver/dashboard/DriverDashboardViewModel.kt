@@ -2,10 +2,12 @@ package es.upc.waypass.presentation.driver.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import es.upc.waypass.data.remote.RetrofitClient
+import dagger.hilt.android.lifecycle.HiltViewModel
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class DriverDashboardState(
     val isLoading: Boolean = false,
@@ -16,7 +18,10 @@ data class DriverDashboardState(
     val message: String = ""
 )
 
-class DriverDashboardViewModel : ViewModel() {
+@HiltViewModel
+class DriverDashboardViewModel @Inject constructor(
+    private val api: WayPassApiService
+) : ViewModel(){
 
     private val _state = MutableStateFlow(DriverDashboardState())
     val state: StateFlow<DriverDashboardState> = _state
@@ -27,13 +32,13 @@ class DriverDashboardViewModel : ViewModel() {
                 _state.value = DriverDashboardState(isLoading = true)
 
                 val routes = try {
-                    RetrofitClient.api.getRoutesByCompany(companyId)
+                    api.getRoutesByCompany(companyId)
                 } catch (e: Exception) {
                     emptyList()
                 }
 
                 val stops = try {
-                    RetrofitClient.api.getStopsByCompany(companyId)
+                    api.getStopsByCompany(companyId)
                 } catch (e: Exception) {
                     emptyList()
                 }

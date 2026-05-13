@@ -5,9 +5,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import es.upc.waypass.MyApplication
 import es.upc.waypass.data.auth.TokenManager
-import es.upc.waypass.data.model.SignInRequest
-import es.upc.waypass.data.model.SignUpRequest
-import es.upc.waypass.data.model.WayPassApiService
+import es.upc.waypass.data.dto.SignInRequest
+import es.upc.waypass.data.dto.SignUpRequest
+import es.upc.waypass.data.remote.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

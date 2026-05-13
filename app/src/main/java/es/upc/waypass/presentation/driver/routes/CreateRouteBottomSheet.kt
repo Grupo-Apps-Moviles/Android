@@ -20,7 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import es.upc.waypass.data.model.StopDto
+import es.upc.waypass.data.dto.StopDto
 import es.upc.waypass.ui.theme.PurpleLight
 
 // ─────────────────────────────────────────────────────────────────────────────

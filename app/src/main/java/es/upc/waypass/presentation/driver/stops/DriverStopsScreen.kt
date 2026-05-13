@@ -81,10 +81,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import es.upc.waypass.data.model.DistrictDto
-import es.upc.waypass.data.model.ProvinceDto
-import es.upc.waypass.data.model.RegionDto
-import es.upc.waypass.data.model.StopDto
+import es.upc.waypass.data.dto.DistrictDto
+import es.upc.waypass.data.dto.ProvinceDto
+import es.upc.waypass.data.dto.RegionDto
+import es.upc.waypass.data.dto.StopDto
 import es.upc.waypass.ui.theme.PurpleLight
 import es.upc.waypass.ui.theme.RedContainer
 import es.upc.waypass.ui.theme.RedDestructive

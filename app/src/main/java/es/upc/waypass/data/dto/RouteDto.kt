@@ -1,4 +1,4 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.data.dto
 
 data class RouteDto(
     val id: Int,

@@ -1,5 +1,19 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.data.remote
 
+import es.upc.waypass.data.dto.AuthenticatedUserResponse
+import es.upc.waypass.data.dto.CompanyDto
+import es.upc.waypass.data.dto.CreateRouteRequest
+import es.upc.waypass.data.dto.CreateSubscriptionResponse
+import es.upc.waypass.data.dto.DistrictDto
+import es.upc.waypass.data.dto.ProvinceDto
+import es.upc.waypass.data.dto.RegionDto
+import es.upc.waypass.data.dto.RouteDto
+import es.upc.waypass.data.dto.SignInRequest
+import es.upc.waypass.data.dto.SignUpRequest
+import es.upc.waypass.data.dto.SignUpResponse
+import es.upc.waypass.data.dto.StopDto
+import es.upc.waypass.data.dto.SubscriptionStatusResponse
+import es.upc.waypass.data.dto.UpdateRouteRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body

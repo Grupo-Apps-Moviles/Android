@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import es.upc.waypass.data.model.WayPassApiService
+import es.upc.waypass.data.remote.WayPassApiService
 import es.upc.waypass.data.remote.AuthInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit

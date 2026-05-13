@@ -1,13 +1,18 @@
-package es.upc.waypass.presentation.driver
+package es.upc.waypass.presentation.driver.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import es.upc.waypass.data.model.RouteDto
+import es.upc.waypass.data.dto.RouteDto
+import es.upc.waypass.presentation.driver.home.DriverNavigationScreen
+import es.upc.waypass.presentation.driver.DriverViewModel
 
 @Composable
 fun DriverHomeScreen(
@@ -45,8 +50,8 @@ fun DriverHomeScreen(
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier.Companion.fillMaxSize(),
+        contentAlignment = Alignment.Companion.Center
     ) {
         CircularProgressIndicator()
     }

@@ -3,8 +3,8 @@ package es.upc.waypass.presentation.driver.stops
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import es.upc.waypass.data.model.StopDto
-import es.upc.waypass.data.model.WayPassApiService
+import es.upc.waypass.data.dto.StopDto
+import es.upc.waypass.data.remote.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

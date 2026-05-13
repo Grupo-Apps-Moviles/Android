@@ -11,14 +11,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import es.upc.waypass.data.auth.TokenManager
-import es.upc.waypass.data.model.RouteDto
-import es.upc.waypass.data.model.SubscriptionScreen
+import es.upc.waypass.data.dto.RouteDto
+import es.upc.waypass.presentation.subscription.SubscriptionScreen
 import es.upc.waypass.presentation.home.HomeScreen
 import es.upc.waypass.presentation.login.RegisterScreen
 import es.upc.waypass.presentation.passenger.ConsultarRutasScreen
 import es.upc.waypass.presentation.passenger.PassengerHomeScreen
-import es.upc.waypass.presentation.driver.DriverHomeScreen
-import es.upc.waypass.presentation.driver.CreateCompanyScreen
+import es.upc.waypass.presentation.driver.home.DriverHomeScreen
+import es.upc.waypass.presentation.driver.company.CreateCompanyScreen
 import es.upc.waypass.presentation.driver.routes.DriverRouteMapScreen
 import es.upc.waypass.presentation.splash.SplashScreen
 

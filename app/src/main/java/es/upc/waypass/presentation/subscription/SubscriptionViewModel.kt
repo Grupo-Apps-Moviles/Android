@@ -1,8 +1,10 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.presentation.subscription
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import es.upc.waypass.domain.usecase.CreateSubscriptionUseCase
+import es.upc.waypass.domain.usecase.GetSubscriptionStatusUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,8 +23,6 @@ sealed class SubscriptionUiState {
 
     data class Error(val message: String) : SubscriptionUiState()
 }
-
-// ─── ViewModel ────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class SubscriptionViewModel @Inject constructor(

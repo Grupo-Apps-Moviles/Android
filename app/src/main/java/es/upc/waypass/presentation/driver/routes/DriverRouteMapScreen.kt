@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
-import es.upc.waypass.data.model.RouteDto
+import es.upc.waypass.data.dto.RouteDto
 import es.upc.waypass.ui.theme.PurpleLight
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

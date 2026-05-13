@@ -1,10 +1,12 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.presentation.subscription
 
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import retrofit2.Retrofit
+import es.upc.waypass.data.remote.WayPassApiService
+import es.upc.waypass.data.repository.SubscriptionRepositoryImpl
+import es.upc.waypass.domain.repository.SubscriptionRepository
 import javax.inject.Singleton
 
 @Module

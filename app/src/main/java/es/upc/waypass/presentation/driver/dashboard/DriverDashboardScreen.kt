@@ -1,4 +1,4 @@
-package es.upc.waypass.presentation.driver
+package es.upc.waypass.presentation.driver.dashboard
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,9 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AttachMoney
-import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Route
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Warning
@@ -44,9 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import es.upc.waypass.presentation.driver.dashboard.DriverDashboardViewModel
-import es.upc.waypass.ui.theme.PurpleLight
 
 @Composable
 fun DriverDashboardScreen(
@@ -62,7 +57,7 @@ fun DriverDashboardScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(paddingValues)
@@ -72,54 +67,54 @@ fun DriverDashboardScreen(
 
         // ── Header: saludo + avatar ───────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.Companion.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Companion.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.Companion.weight(1f)) {
                 Text(
                     text = "¡Bienvenido!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.Companion.height(2.dp))
                 Text(
                     text = companyName,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Companion.SemiBold
                 )
             }
 
             // Avatar con inicial de la empresa
             Box(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .size(48.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Companion.Center
             ) {
                 Text(
                     text = companyName.firstOrNull()?.uppercaseChar()?.toString() ?: "W",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Companion.Bold
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.Companion.height(24.dp))
 
         // ── Sección: Resumen ──────────────────────────────────────────────────
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.Companion.fillMaxWidth(),
+            verticalAlignment = Alignment.Companion.CenterVertically
         ) {
             Text(
                 text = "Resumen General",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.Companion.weight(1f)
             )
 //            if (!state.isLoading) {
 //                Text(
@@ -130,25 +125,25 @@ fun DriverDashboardScreen(
 //            }
         }
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.Companion.height(14.dp))
 
         // ── Cards de stats ────────────────────────────────────────────────────
         if (state.isLoading) {
             // Skeleton loading
             repeat(2) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.Companion.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     repeat(2) {
-                        SkeletonCard(modifier = Modifier.weight(1f))
+                        SkeletonCard(modifier = Modifier.Companion.weight(1f))
                     }
                 }
-                if (it == 0) Spacer(modifier = Modifier.height(14.dp))
+                if (it == 0) Spacer(modifier = Modifier.Companion.height(14.dp))
             }
         } else {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 SummaryCard(
@@ -157,21 +152,21 @@ fun DriverDashboardScreen(
                     icon = Icons.Outlined.AttachMoney,
                     //accentColor = Color(0xFF0EA5E9), color azul
                     accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.Companion.weight(1f)
                 )
                 SummaryCard(
                     title = "Paraderos",
                     value = state.stopsCount.toString(),
                     icon = Icons.Outlined.LocationOn,
                     accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.Companion.weight(1f)
                 )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.Companion.height(14.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.Companion.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 SummaryCard(
@@ -180,7 +175,7 @@ fun DriverDashboardScreen(
                     icon = Icons.Outlined.Route,
                     //accentColor = Color(0xFF10B981), //color verde
                     accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.Companion.weight(1f)
                 )
                 SummaryCard(
                     title = "Intervalo Prom.",
@@ -188,31 +183,31 @@ fun DriverDashboardScreen(
                     icon = Icons.Outlined.Schedule,
                     //accentColor = Color(0xFFF59E0B), //color naranja
                     accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.Companion.weight(1f)
                 )
             }
         }
 
         // ── Error ─────────────────────────────────────────────────────────────
         if (state.message.isNotBlank()) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.Companion.height(12.dp))
             Row(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxWidth()
                     .background(
                         color = MaterialTheme.colorScheme.errorContainer,
                         shape = RoundedCornerShape(10.dp)
                     )
                     .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Companion.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Warning,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.Companion.size(16.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.Companion.width(8.dp))
                 Text(
                     text = state.message,
                     style = MaterialTheme.typography.bodySmall,
@@ -221,7 +216,7 @@ fun DriverDashboardScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.Companion.height(24.dp))
 
 //        // ── Banner de empresa ─────────────────────────────────────────────────
 //        CompanyBannerCard(companyName = companyName)
@@ -258,13 +253,9 @@ fun DriverDashboardScreen(
 //            )
 //        }
 
-        Spacer(modifier = Modifier.height(80.dp))
+        Spacer(modifier = Modifier.Companion.height(80.dp))
     }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// COMPONENTES
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun SummaryCard(
@@ -272,18 +263,18 @@ fun SummaryCard(
     value: String,
     icon: ImageVector,
     accentColor: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.Companion
 ) {
     Card(
         modifier = modifier.height(120.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Companion.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
+        Row(modifier = Modifier.Companion.fillMaxSize()) {
             // Barra de acento izquierda
             Box(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .width(4.dp)
                     .fillMaxHeight()
                     .background(
@@ -293,26 +284,26 @@ fun SummaryCard(
             )
 
             Column(
-                modifier = Modifier
+                modifier = Modifier.Companion
                     .fillMaxSize()
                     .padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Ícono en chip redondeado
                 Box(
-                    modifier = Modifier
+                    modifier = Modifier.Companion
                         .size(34.dp)
                         .background(
                             color = accentColor.copy(alpha = 0.12f),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
                         ),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Companion.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = title,
                         tint = accentColor,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.Companion.size(18.dp)
                     )
                 }
 
@@ -323,12 +314,12 @@ fun SummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 0.3.sp
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.Companion.height(2.dp))
                     Text(
                         text = value,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Companion.Bold
                     )
                 }
             }
@@ -337,10 +328,10 @@ fun SummaryCard(
 }
 
 @Composable
-fun SkeletonCard(modifier: Modifier = Modifier) {
+fun SkeletonCard(modifier: Modifier = Modifier.Companion) {
     Card(
         modifier = modifier.height(120.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),

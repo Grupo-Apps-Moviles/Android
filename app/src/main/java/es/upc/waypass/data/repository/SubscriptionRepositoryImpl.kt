@@ -1,5 +1,8 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.data.repository
 
+import es.upc.waypass.domain.repository.SubscriptionRepository
+import es.upc.waypass.data.dto.SubscriptionStatus
+import es.upc.waypass.data.remote.WayPassApiService
 import javax.inject.Inject
 
 class SubscriptionRepositoryImpl @Inject constructor(

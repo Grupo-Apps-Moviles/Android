@@ -1,5 +1,7 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.domain.usecase
 
+import es.upc.waypass.data.dto.SubscriptionStatus
+import es.upc.waypass.domain.repository.SubscriptionRepository
 import javax.inject.Inject
 
 class CreateSubscriptionUseCase @Inject constructor(

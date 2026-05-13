@@ -1,4 +1,4 @@
-package es.upc.waypass.data.model
+package es.upc.waypass.data.dto
 
 data class StopDto(
     val id: Int,

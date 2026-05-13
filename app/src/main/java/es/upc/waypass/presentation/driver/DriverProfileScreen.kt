@@ -4,8 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Verified
@@ -21,9 +21,11 @@ import androidx.compose.ui.unit.dp
 fun DriverProfileScreen(
     userId: Int,
     companyName: String,
+    hasActiveSubscription: Boolean,
     onSubscribeClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,22 +54,29 @@ fun DriverProfileScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            ),
             elevation = CardDefaults.cardElevation(3.dp)
         ) {
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(24.dp),
+
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
                 Box(
                     modifier = Modifier
                         .size(82.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer),
+
                     contentAlignment = Alignment.Center
                 ) {
+
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Perfil",
@@ -109,19 +118,31 @@ fun DriverProfileScreen(
         ProfileInfoCard(
             icon = Icons.Default.Verified,
             title = "Estado",
-            value = "Activo"
+            value = if (hasActiveSubscription) "Activo" else "Inactivo",
+            valueColor = if (hasActiveSubscription)
+                Color(0xFFDC2626)
+            else
+                Color(0xFF6B7280)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onSubscribeClick,
+            enabled = !hasActiveSubscription,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF1976D2)
+                containerColor = Color(0xFF1976D2),
+                disabledContainerColor = Color(0xFF9CA3AF)
             )
         ) {
-            Text("Suscribirse a Premium")
+
+            Text(
+                text = if (hasActiveSubscription)
+                    "Premium Activo"
+                else
+                    "Suscribirse a Premium"
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -133,6 +154,7 @@ fun DriverProfileScreen(
                 containerColor = Color(0xFFDC2626)
             )
         ) {
+
             Icon(
                 imageVector = Icons.Default.Logout,
                 contentDescription = "Cerrar sesión"
@@ -149,26 +171,36 @@ fun DriverProfileScreen(
 fun ProfileInfoCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
-    value: String
+    value: String,
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
+
         Row(
             modifier = Modifier.padding(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Box(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
+
                 contentAlignment = Alignment.Center
             ) {
+
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
@@ -179,6 +211,7 @@ fun ProfileInfoCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column {
+
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
@@ -188,7 +221,7 @@ fun ProfileInfoCard(
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = valueColor
                 )
             }
         }

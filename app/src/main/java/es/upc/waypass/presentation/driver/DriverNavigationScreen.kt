@@ -8,6 +8,10 @@ import androidx.compose.material.icons.filled.Route
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.hilt.navigation.compose.hiltViewModel
+import es.upc.waypass.data.model.RouteDto
+import es.upc.waypass.data.model.SubscriptionViewModel
+import es.upc.waypass.data.model.SubscriptionUiState
 import es.upc.waypass.presentation.driver.routes.DriverRoutesScreen
 import es.upc.waypass.presentation.driver.stops.DriverStopsScreen
 
@@ -23,9 +27,18 @@ fun DriverNavigationScreen(
     companyName: String,
     onSubscribeClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onViewMapClick: (es.upc.waypass.data.model.RouteDto) -> Unit
+    onViewMapClick: (RouteDto) -> Unit,
+    subscriptionViewModel: SubscriptionViewModel = hiltViewModel()
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
+
+    val subscriptionState by subscriptionViewModel.uiState.collectAsState()
+
+    LaunchedEffect(selectedIndex) {
+        subscriptionViewModel.checkSubscriptionStatus()
+    }
+
+    val hasActiveSubscription = subscriptionState is SubscriptionUiState.Active
 
     val items = listOf(
         DriverBottomItem("Inicio", Icons.Default.Home),
@@ -40,7 +53,16 @@ fun DriverNavigationScreen(
                 items.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
-                        onClick = { selectedIndex = index },
+                        enabled = !(index == 1 || index == 2) || hasActiveSubscription,
+                        onClick = {
+                            val isPremiumOption = index == 1 || index == 2
+
+                            if (isPremiumOption && !hasActiveSubscription) {
+                                selectedIndex = 3
+                            } else {
+                                selectedIndex = index
+                            }
+                        },
                         icon = {
                             Icon(
                                 imageVector = item.icon,
@@ -74,6 +96,7 @@ fun DriverNavigationScreen(
             3 -> DriverProfileScreen(
                 userId = userId,
                 companyName = companyName,
+                hasActiveSubscription = hasActiveSubscription,
                 onSubscribeClick = onSubscribeClick,
                 onLogoutClick = onLogoutClick
             )

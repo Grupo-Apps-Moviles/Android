@@ -14,6 +14,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.R
 import es.upc.waypass.presentation.login.AuthViewModel
@@ -23,7 +24,7 @@ fun HomeScreen(
     padding: PaddingValues,
     onLoginSuccess: (Int, Int) -> Unit = { _, _ -> },
     onRegisterClick: () -> Unit = {},
-    authViewModel: AuthViewModel = viewModel()
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

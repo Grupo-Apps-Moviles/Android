@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.R
 import es.upc.waypass.data.model.CreateScheduleRequest
@@ -43,7 +44,7 @@ fun DriverRoutesScreen(
     companyId: Int,
     paddingValues: PaddingValues,
     onViewMapClick: (RouteDto) -> Unit = {},
-    viewModel: DriverRoutesViewModel = viewModel()
+    viewModel: DriverRoutesViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 

@@ -2,8 +2,9 @@ package es.upc.waypass.presentation.driver.stops
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import es.upc.waypass.data.model.StopDto
-import es.upc.waypass.data.remote.RetrofitClient
+import es.upc.waypass.data.model.WayPassApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,6 +12,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import javax.inject.Inject
 
 data class StopsState(
     val isLoading: Boolean = false,
@@ -18,7 +20,10 @@ data class StopsState(
     val message: String = ""
 )
 
-class DriverStopsViewModel : ViewModel() {
+@HiltViewModel
+class DriverStopsViewModel @Inject constructor(
+    private val api: WayPassApiService
+) : ViewModel() {
 
     private val _state = MutableStateFlow(StopsState())
     val state: StateFlow<StopsState> = _state
@@ -28,7 +33,7 @@ class DriverStopsViewModel : ViewModel() {
             try {
                 _state.value = StopsState(isLoading = true)
 
-                val stops = RetrofitClient.api.getStopsByCompany(companyId)
+                val stops = api.getStopsByCompany(companyId)
 
                 _state.value = StopsState(
                     isLoading = false,
@@ -57,7 +62,7 @@ class DriverStopsViewModel : ViewModel() {
             try {
                 _state.value = _state.value.copy(isLoading = true)
 
-                RetrofitClient.api.createStop(
+                api.createStop(
                     name = name.toRequestBody("text/plain".toMediaType()),
                     googleMapsUrl = mapsUrl.toRequestBody("text/plain".toMediaType()),
                     phone = phone.toRequestBody("text/plain".toMediaType()),
@@ -106,7 +111,7 @@ class DriverStopsViewModel : ViewModel() {
                     fkIdDistrict = districtId
                 )
 
-                RetrofitClient.api.updateStop(stopId, updatedStop)
+                api.updateStop(stopId, updatedStop)
 
                 loadStops(companyId)
 
@@ -124,7 +129,7 @@ class DriverStopsViewModel : ViewModel() {
             try {
                 _state.value = _state.value.copy(message = "")
 
-                RetrofitClient.api.deleteStop(stopId)
+                api.deleteStop(stopId)
 
                 loadStops(companyId)
 

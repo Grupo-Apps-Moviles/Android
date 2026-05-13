@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import es.upc.waypass.data.model.DistrictDto
@@ -38,8 +39,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 fun DriverStopsScreen(
     companyId: Int,
     paddingValues: PaddingValues,
-    viewModel: DriverStopsViewModel = viewModel(),
-    geographicViewModel: GeographicViewModel = viewModel()
+    viewModel: DriverStopsViewModel = hiltViewModel(),
+    geographicViewModel: GeographicViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val geoState by geographicViewModel.state.collectAsState()

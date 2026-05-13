@@ -21,6 +21,7 @@ fun DriverNavigationScreen(
     userId: Int,
     companyId: Int,
     companyName: String,
+    onSubscribeClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onViewMapClick: (es.upc.waypass.data.model.RouteDto) -> Unit
 ) {
@@ -73,6 +74,7 @@ fun DriverNavigationScreen(
             3 -> DriverProfileScreen(
                 userId = userId,
                 companyName = companyName,
+                onSubscribeClick = onSubscribeClick,
                 onLogoutClick = onLogoutClick
             )
         }

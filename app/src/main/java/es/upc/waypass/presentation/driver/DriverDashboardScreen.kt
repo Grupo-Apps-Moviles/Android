@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import es.upc.waypass.presentation.driver.dashboard.DriverDashboardViewModel
 
@@ -21,7 +22,7 @@ fun DriverDashboardScreen(
     companyId: Int,
     companyName: String,
     paddingValues: PaddingValues,
-    viewModel: DriverDashboardViewModel = viewModel()
+    viewModel: DriverDashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 

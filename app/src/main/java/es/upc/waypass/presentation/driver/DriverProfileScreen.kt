@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 fun DriverProfileScreen(
     userId: Int,
     companyName: String,
+    onSubscribeClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Column(
@@ -112,6 +113,18 @@ fun DriverProfileScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onSubscribeClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF1976D2)
+            )
+        ) {
+            Text("Suscribirse a Premium")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = onLogoutClick,

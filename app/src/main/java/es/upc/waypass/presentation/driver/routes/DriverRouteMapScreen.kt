@@ -29,7 +29,7 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-private const val GOOGLE_ROUTES_API_KEY = "AIzaSyDun8E59XSJAYnwH9SSPGUtMPhjyPaJAKU"
+private const val GOOGLE_ROUTES_API_KEY = "AIzaSyCfdgCwVj7gep1N4I84TqmtpGMMMv8D_t0"
 
 @Composable
 fun DriverRouteMapScreen(

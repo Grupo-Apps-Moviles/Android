@@ -5,18 +5,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Route
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
 import es.upc.waypass.data.dto.RouteDto
@@ -43,7 +33,6 @@ fun DriverNavigationScreen(
     subscriptionViewModel: SubscriptionViewModel = hiltViewModel()
 ) {
     var selectedIndex by remember { mutableStateOf(0) }
-
     val subscriptionState by subscriptionViewModel.uiState.collectAsState()
 
     LaunchedEffect(selectedIndex) {
@@ -68,7 +57,6 @@ fun DriverNavigationScreen(
                         enabled = !(index == 1 || index == 2) || hasActiveSubscription,
                         onClick = {
                             val isPremiumOption = index == 1 || index == 2
-
                             if (isPremiumOption && !hasActiveSubscription) {
                                 selectedIndex = 3
                             } else {
@@ -88,23 +76,22 @@ fun DriverNavigationScreen(
         }
     ) { paddingValues ->
         when (selectedIndex) {
+            // ← Ahora pasa userId como driverId al dashboard
             0 -> DriverDashboardScreen(
                 companyId = companyId,
                 companyName = companyName,
+                driverId = userId,
                 paddingValues = paddingValues
             )
-
             1 -> DriverStopsScreen(
                 companyId = companyId,
                 paddingValues = paddingValues
             )
-
             2 -> DriverRoutesScreen(
                 companyId = companyId,
                 paddingValues = paddingValues,
                 onViewMapClick = onViewMapClick
             )
-
             3 -> DriverProfileScreen(
                 userId = userId,
                 companyName = companyName,

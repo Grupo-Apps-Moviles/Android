@@ -52,6 +52,7 @@ kotlin {
 
 dependencies {
 
+    implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -98,6 +99,10 @@ dependencies {
 
     // Browser / Chrome Tabs
     implementation("androidx.browser:browser:1.8.0")
+
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
 
     // Tests
     testImplementation(libs.junit)

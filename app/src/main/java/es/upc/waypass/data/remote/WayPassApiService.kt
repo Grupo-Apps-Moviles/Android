@@ -16,6 +16,7 @@ import es.upc.waypass.data.dto.SubscriptionStatusResponse
 import es.upc.waypass.data.dto.UpdateRouteRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -138,4 +139,9 @@ interface WayPassApiService {
     suspend fun getDistrictsByProvince(
         @Path("provinceId") provinceId: Int
     ): List<DistrictDto>
+
+    @GET("reservations/driver/{driverId}")
+    suspend fun getDriverReservations(
+        @Path("driverId") driverId: Int
+    ): Response<List<ReservationResponse>>
 }

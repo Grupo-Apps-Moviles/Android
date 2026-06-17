@@ -1,38 +1,15 @@
 package es.upc.waypass.presentation.driver.dashboard
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AttachMoney
-import androidx.compose.material.icons.outlined.LocationOn
-import androidx.compose.material.icons.outlined.Route
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,239 +19,395 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import es.upc.waypass.data.remote.ReservationResponse
 
 @Composable
 fun DriverDashboardScreen(
     companyId: Int,
     companyName: String,
+    // ← Ahora recibe userId del conductor para cargar SUS reservas
+    driverId: Int,
     paddingValues: PaddingValues,
     viewModel: DriverDashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(companyId) {
-        if (companyId != 0) viewModel.loadDashboard(companyId)
+        if (companyId != 0) viewModel.loadDashboard(companyId, driverId)
     }
 
-    Column(
-        modifier = Modifier.Companion
+    LazyColumn(
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(paddingValues)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 20.dp)
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
 
-        // ── Header: saludo + avatar ───────────────────────────────────────────
-        Row(
-            modifier = Modifier.Companion.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Companion.CenterVertically
-        ) {
-            Column(modifier = Modifier.Companion.weight(1f)) {
-                Text(
-                    text = "¡Bienvenido!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.Companion.height(2.dp))
-                Text(
-                    text = companyName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Companion.SemiBold
-                )
-            }
-
-            // Avatar con inicial de la empresa
-            Box(
-                modifier = Modifier.Companion
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Companion.Center
+        // ── Header ────────────────────────────────────────────────────────────
+        item {
+            Spacer(modifier = Modifier.height(20.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = companyName.firstOrNull()?.uppercaseChar()?.toString() ?: "W",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Companion.Bold
-                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "¡Bienvenido!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = companyName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = companyName.firstOrNull()?.uppercaseChar()?.toString() ?: "W",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.Companion.height(24.dp))
-
-        // ── Sección: Resumen ──────────────────────────────────────────────────
-        Row(
-            modifier = Modifier.Companion.fillMaxWidth(),
-            verticalAlignment = Alignment.Companion.CenterVertically
-        ) {
+        // ── Resumen stats ─────────────────────────────────────────────────────
+        item {
             Text(
                 text = "Resumen General",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.Companion.weight(1f)
+                color = MaterialTheme.colorScheme.onSurface
             )
-//            if (!state.isLoading) {
-//                Text(
-//                    text = "Actualizado",
-//                    style = MaterialTheme.typography.labelSmall,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant
-//                )
-//            }
-        }
+            Spacer(modifier = Modifier.height(14.dp))
 
-        Spacer(modifier = Modifier.Companion.height(14.dp))
-
-        // ── Cards de stats ────────────────────────────────────────────────────
-        if (state.isLoading) {
-            // Skeleton loading
-            repeat(2) {
+            if (state.isLoading) {
+                repeat(2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        repeat(2) { SkeletonCard(modifier = Modifier.weight(1f)) }
+                    }
+                    if (it == 0) Spacer(modifier = Modifier.height(14.dp))
+                }
+            } else {
                 Row(
-                    modifier = Modifier.Companion.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    repeat(2) {
-                        SkeletonCard(modifier = Modifier.Companion.weight(1f))
+                    SummaryCard(
+                        title = "Tarifa Promedio",
+                        value = "S/ ${String.format("%.2f", state.averagePrice)}",
+                        icon = Icons.Outlined.AttachMoney,
+                        accentColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        title = "Paraderos",
+                        value = state.stopsCount.toString(),
+                        icon = Icons.Outlined.LocationOn,
+                        accentColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(14.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    SummaryCard(
+                        title = "Rutas Activas",
+                        value = state.routesCount.toString(),
+                        icon = Icons.Outlined.Route,
+                        accentColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SummaryCard(
+                        title = "Intervalo Prom.",
+                        value = "${state.averageFrequency} min",
+                        icon = Icons.Outlined.Schedule,
+                        accentColor = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // ── Sección reservas ──────────────────────────────────────────────────
+        item {
+            Text(
+                text = "Pasajeros Reservados",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Card de ganancias totales
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.AttachMoney,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Ganancias Totales",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "S/ ${String.format("%.2f", state.totalEarnings)}",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
                 }
-                if (it == 0) Spacer(modifier = Modifier.Companion.height(14.dp))
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        // ── Lista de reservas ─────────────────────────────────────────────────
+        if (state.isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else if (state.payments.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Outlined.People,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Sin reservas aún",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         } else {
-            Row(
-                modifier = Modifier.Companion.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                SummaryCard(
-                    title = "Tarifa Promedio",
-                    value = "S/ ${String.format("%.2f", state.averagePrice)}",
-                    icon = Icons.Outlined.AttachMoney,
-                    //accentColor = Color(0xFF0EA5E9), color azul
-                    accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.weight(1f)
-                )
-                SummaryCard(
-                    title = "Paraderos",
-                    value = state.stopsCount.toString(),
-                    icon = Icons.Outlined.LocationOn,
-                    accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.Companion.height(14.dp))
-
-            Row(
-                modifier = Modifier.Companion.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
-                SummaryCard(
-                    title = "Rutas Activas",
-                    value = state.routesCount.toString(),
-                    icon = Icons.Outlined.Route,
-                    //accentColor = Color(0xFF10B981), //color verde
-                    accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.weight(1f)
-                )
-                SummaryCard(
-                    title = "Intervalo Prom.",
-                    value = "${state.averageFrequency} min",
-                    icon = Icons.Outlined.Schedule,
-                    //accentColor = Color(0xFFF59E0B), //color naranja
-                    accentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.Companion.weight(1f)
-                )
+            items(state.payments) { reservation ->
+                ReservationCard(reservation = reservation)
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
 
         // ── Error ─────────────────────────────────────────────────────────────
         if (state.message.isNotBlank()) {
-            Spacer(modifier = Modifier.Companion.height(12.dp))
-            Row(
-                modifier = Modifier.Companion
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = RoundedCornerShape(10.dp)
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(16.dp)
                     )
-                    .padding(12.dp),
-                verticalAlignment = Alignment.Companion.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Warning,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.Companion.size(16.dp)
-                )
-                Spacer(modifier = Modifier.Companion.width(8.dp))
-                Text(
-                    text = state.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.message,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.Companion.height(24.dp))
-
-//        // ── Banner de empresa ─────────────────────────────────────────────────
-//        CompanyBannerCard(companyName = companyName)
-//
-//        Spacer(modifier = Modifier.height(24.dp))
-//
-//        // ── Accesos rápidos ───────────────────────────────────────────────────
-//        Text(
-//            text = "Accesos Rápidos",
-//            style = MaterialTheme.typography.titleMedium,
-//            color = MaterialTheme.colorScheme.onSurface
-//        )
-//
-//        Spacer(modifier = Modifier.height(12.dp))
-
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.spacedBy(12.dp)
-//        ) {
-//            QuickAccessCard(
-//                icon = Icons.Outlined.Route,
-//                label = "Rutas",
-//                modifier = Modifier.weight(1f)
-//            )
-//            QuickAccessCard(
-//                icon = Icons.Outlined.LocationOn,
-//                label = "Paraderos",
-//                modifier = Modifier.weight(1f)
-//            )
-//            QuickAccessCard(
-//                icon = Icons.Outlined.Person,
-//                label = "Perfil",
-//                modifier = Modifier.weight(1f)
-//            )
-//        }
-
-        Spacer(modifier = Modifier.Companion.height(80.dp))
+        item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }
 
+// ── Card individual de reserva ────────────────────────────────────────────────
+@Composable
+fun ReservationCard(reservation: ReservationResponse) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Icono + ID de reserva
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Pasajero #${reservation.userId}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "Reserva #${reservation.id}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Badge de estado
+                val (statusColor, statusLabel) = when (reservation.status.lowercase()) {
+                    "paid" -> Pair(Color(0xFF16A34A), "Pagado")
+                    "canceled" -> Pair(Color(0xFFDC2626), "Cancelado")
+                    else -> Pair(Color(0xFFD97706), "Pendiente")
+                }
+                Surface(
+                    color = statusColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(
+                        text = statusLabel,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = statusColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Ganancia del conductor
+                Column {
+                    Text(
+                        text = "Tu ganancia",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "S/ ${String.format("%.2f", reservation.driverEarnings)}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF16A34A)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Fecha
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Schedule,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = reservation.createdAt.take(10), // solo fecha YYYY-MM-DD
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+// ── Componentes reutilizables ─────────────────────────────────────────────────
 @Composable
 fun SummaryCard(
     title: String,
     value: String,
     icon: ImageVector,
     accentColor: Color,
-    modifier: Modifier = Modifier.Companion
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier.height(120.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Companion.White),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.Companion.fillMaxSize()) {
-            // Barra de acento izquierda
+        Row(modifier = Modifier.fillMaxSize()) {
             Box(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .width(4.dp)
                     .fillMaxHeight()
                     .background(
@@ -282,31 +415,28 @@ fun SummaryCard(
                         shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
                     )
             )
-
             Column(
-                modifier = Modifier.Companion
+                modifier = Modifier
                     .fillMaxSize()
                     .padding(12.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Ícono en chip redondeado
                 Box(
-                    modifier = Modifier.Companion
+                    modifier = Modifier
                         .size(34.dp)
                         .background(
                             color = accentColor.copy(alpha = 0.12f),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp)
                         ),
-                    contentAlignment = Alignment.Companion.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = title,
                         tint = accentColor,
-                        modifier = Modifier.Companion.size(18.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
-
                 Column {
                     Text(
                         text = title,
@@ -314,12 +444,12 @@ fun SummaryCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 0.3.sp
                     )
-                    Spacer(modifier = Modifier.Companion.height(2.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = value,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Companion.Bold
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -328,10 +458,10 @@ fun SummaryCard(
 }
 
 @Composable
-fun SkeletonCard(modifier: Modifier = Modifier.Companion) {
+fun SkeletonCard(modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.height(120.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),

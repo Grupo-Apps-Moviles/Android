@@ -3,6 +3,9 @@ package es.upc.waypass.data.remote
 import es.upc.waypass.data.dto.AuthenticatedUserResponse
 import es.upc.waypass.data.dto.CompanyDto
 import es.upc.waypass.data.dto.CreateRouteRequest
+import es.upc.waypass.data.dto.JoinCompanyRequest
+import es.upc.waypass.data.dto.MembershipResponse
+import es.upc.waypass.data.dto.MyMembershipResponse
 import es.upc.waypass.data.dto.CreateSubscriptionResponse
 import es.upc.waypass.data.dto.DistrictDto
 import es.upc.waypass.data.dto.ProvinceDto
@@ -144,4 +147,32 @@ interface WayPassApiService {
     suspend fun getDriverReservations(
         @Path("driverId") driverId: Int
     ): Response<List<ReservationResponse>>
+
+    //MEMBERSHIPS
+
+    @GET("memberships/me")
+    suspend fun getMyMembership(): Response<MyMembershipResponse>          // 404 = sin empresa
+
+    @POST("memberships/join")
+    suspend fun joinCompany(
+        @Body request: JoinCompanyRequest
+    ): Response<MyMembershipResponse>
+
+    @DELETE("memberships/me")
+    suspend fun leaveCompany(): Response<Unit>
+
+    @GET("memberships/company/{companyId}")
+    suspend fun getCompanyMembers(
+        @Path("companyId") companyId: Int
+    ): List<MembershipResponse>
+
+    @DELETE("memberships/{membershipId}")
+    suspend fun removeMember(
+        @Path("membershipId") membershipId: Int
+    ): Response<Unit>
+
+    @POST("memberships/company/{companyId}/invitation-code/regenerate")
+    suspend fun regenerateInvitationCode(
+        @Path("companyId") companyId: Int
+    ): CompanyDto
 }

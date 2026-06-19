@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -282,6 +283,26 @@ fun DriverProfileScreen(
                         "Premium Activo"
                     else
                         "Suscribirse a Premium"
+                )
+            }
+        } else {
+            // Conductor no-admin: estado de la suscripción de la empresa, en lectura.
+            ProfileInfoCard(
+                icon = Icons.Outlined.WorkspacePremium,
+                title = "Suscripción de la empresa",
+                value = if (hasActiveSubscription) "Activa" else "Inactiva",
+                valueColor = if (hasActiveSubscription)
+                    Color(0xFF16A34A)
+                else
+                    Color(0xFF6B7280)
+            )
+
+            if (!hasActiveSubscription) {
+                Text(
+                    text = "El administrador debe activar la suscripción para habilitar las funciones premium.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF6B7280),
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
         }

@@ -31,7 +31,7 @@ class MembershipRepositoryImpl @Inject constructor(
             val response = api.joinCompany(JoinCompanyRequest(invitationCode = code))
             when {
                 response.code() == 404 -> error("Código de invitación inválido")
-                response.code() == 409 -> error("Ya perteneces a una empresa")
+                response.code() == 409 -> error(mapJoinConflict(response.errorBody()?.string()))
                 response.isSuccessful -> {
                     val body = response.body()
                         ?: error("Respuesta vacía al unirse a la empresa")
@@ -79,6 +79,27 @@ class MembershipRepositoryImpl @Inject constructor(
         runCatching {
             api.regenerateInvitationCode(companyId).invitationCode ?: ""
         }
+
+    /**
+     * El backend devuelve 409 tanto para el muro de pago (la empresa free alcanzó su
+     * tope de miembros) como para la membresía duplicada. Distinguimos por palabras
+     * clave del cuerpo; si no es concluyente, usamos un mensaje que cubre ambos casos.
+     */
+    private fun mapJoinConflict(body: String?): String {
+        val text = body?.lowercase().orEmpty()
+        val mentionsCapacity = listOf("límite", "limite", "limit", "capacidad", "capacity", "lleno", "full", "miembros", "members", "suscrip")
+            .any { it in text }
+        val mentionsDuplicate = listOf("perteneces", "duplicad", "already", "existing", "duplicate")
+            .any { it in text }
+        return when {
+            mentionsCapacity && !mentionsDuplicate ->
+                "La empresa alcanzó su límite de miembros. El administrador debe activar la suscripción."
+            mentionsDuplicate && !mentionsCapacity ->
+                "Ya perteneces a una empresa."
+            else ->
+                "No fue posible unirte: la empresa está llena o ya perteneces a una empresa."
+        }
+    }
 
     private fun MyMembershipResponse.toMembership() = Membership(
         companyId = companyId,

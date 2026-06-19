@@ -264,22 +264,26 @@ fun DriverProfileScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = onSubscribeClick,
-            enabled = !hasActiveSubscription,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                disabledContainerColor = Color(0xFF9CA3AF)
-            )
-        ) {
+        // ─── Suscripción de la empresa ───────────────────────────────────────
+        // Solo el Admin paga: únicamente él ve y opera el botón de suscripción.
+        if (isAdmin) {
+            Button(
+                onClick = onSubscribeClick,
+                enabled = !hasActiveSubscription,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = Color(0xFF9CA3AF)
+                )
+            ) {
 
-            Text(
-                text = if (hasActiveSubscription)
-                    "Premium Activo"
-                else
-                    "Suscribirse a Premium"
-            )
+                Text(
+                    text = if (hasActiveSubscription)
+                        "Premium Activo"
+                    else
+                        "Suscribirse a Premium"
+                )
+            }
         }
 
         // ─── Salir de la empresa (solo Driver) ───────────────────────────────

@@ -4,5 +4,6 @@ data class CompanyDto(
     val id: Int,
     val name: String,
     val logoUrl: String,
-    val fkIdUser: Int
+    val fkIdUser: Int,
+    val invitationCode: String? = null   // NUEVO
 )

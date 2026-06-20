@@ -27,7 +27,11 @@ fun DriverNavigationScreen(
     userId: Int,
     companyId: Int,
     companyName: String,
+    memberRole: String,
+    invitationCode: String?,
     onSubscribeClick: () -> Unit,
+    onManageMembersClick: () -> Unit,
+    onLeaveCompanyClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onViewMapClick: (RouteDto) -> Unit,
     subscriptionViewModel: SubscriptionViewModel = hiltViewModel()
@@ -95,8 +99,12 @@ fun DriverNavigationScreen(
             3 -> DriverProfileScreen(
                 userId = userId,
                 companyName = companyName,
+                memberRole = memberRole,
+                invitationCode = invitationCode,
                 hasActiveSubscription = hasActiveSubscription,
                 onSubscribeClick = onSubscribeClick,
+                onManageMembersClick = onManageMembersClick,
+                onLeaveCompanyClick = onLeaveCompanyClick,
                 onLogoutClick = onLogoutClick
             )
         }

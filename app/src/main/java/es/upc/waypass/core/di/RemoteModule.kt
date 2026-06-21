@@ -16,7 +16,7 @@ import javax.inject.Singleton
 object NetworkModule {
 
     private const val BASE_URL =
-        "https://backendmoviles-hqu5.onrender.com/api/"
+        "https://waypass-1egd.onrender.com/api/"
     @Provides
     @Singleton
     fun provideOkHttpClient(

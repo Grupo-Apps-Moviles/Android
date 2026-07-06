@@ -69,7 +69,11 @@ class SubscriptionViewModel @Inject constructor(
         }
     }
 
-    fun onPayPalOpened() {
+    fun onPayPalSuccess() {
+        checkSubscriptionStatus()
+    }
+
+    fun onPayPalCancelled() {
         _uiState.value = SubscriptionUiState.Idle
     }
 }
